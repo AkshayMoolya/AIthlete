@@ -6,13 +6,16 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 import { ArrowRight } from "lucide-react";
-import { ThemeToggle } from "@/src/components/theme-toggle";
-import { Card, CardContent } from "@/src/components/ui/card";
-import { Label } from "@/src/components/ui/label";
-import { Input } from "@/src/components/ui/input";
-import { Button } from "@/src/components/ui/button";
-import { Logo } from "@/src/components/ui/logo";
-import { Alert } from "@/src/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { Logo } from "@/components/ui/logo";
+import { cn } from "@/lib/utils";
+import { useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { usePathname } from "next/navigation";
 
 export default function Login() {
   const [email, setEmail] = useState("");

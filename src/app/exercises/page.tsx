@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { ThemeToggle } from "@/components/theme-toggle";
 import {
   Dumbbell,
   Search,
@@ -16,6 +15,7 @@ import {
   Clock,
 } from "lucide-react";
 import Link from "next/link";
+import { Header } from "@/components/layout/header";
 
 interface Exercise {
   id: string;
@@ -94,51 +94,8 @@ export default function Exercises() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b bg-background/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-foreground rounded-lg flex items-center justify-center">
-              <Dumbbell className="w-5 h-5 text-background" />
-            </div>
-            <span className="text-xl font-semibold text-foreground">
-              FitTracker
-            </span>
-          </div>
-          <nav className="hidden md:flex items-center space-x-8">
-            <Link
-              href="/dashboard"
-              className="text-muted-foreground hover:text-foreground transition-colors text-sm"
-            >
-              Dashboard
-            </Link>
-            <Link
-              href="/workouts"
-              className="text-muted-foreground hover:text-foreground transition-colors text-sm"
-            >
-              Workouts
-            </Link>
-            <Link
-              href="/progress"
-              className="text-muted-foreground hover:text-foreground transition-colors text-sm"
-            >
-              Progress
-            </Link>
-            <Link
-              href="/exercises"
-              className="text-foreground font-medium text-sm"
-            >
-              Exercises
-            </Link>
-          </nav>
-          <div className="flex items-center space-x-3">
-            <ThemeToggle />
-            <Button variant="ghost" size="sm">
-              Profile
-            </Button>
-          </div>
-        </div>
-      </header>
+      {/* Replace custom header with reusable Header component */}
+      <Header variant="dashboard" />
 
       <div className="container mx-auto px-6 py-8">
         {/* Header Section */}

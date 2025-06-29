@@ -48,15 +48,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const {
-      name,
-      description,
-      isPublic,
-      estimatedDuration,
-      difficulty,
-      tags,
-      exercises,
-    } = await request.json();
+    const { name, description, isPublic, estimatedDuration, tags, exercises } =
+      await request.json();
 
     const workout = await db.workout.create({
       data: {
@@ -64,7 +57,6 @@ export async function POST(request: NextRequest) {
         description,
         isPublic: isPublic || false,
         estimatedDuration,
-        difficulty: difficulty || "Beginner",
         tags: tags || [],
         userId: session.user.id,
         exercises: {
@@ -73,7 +65,7 @@ export async function POST(request: NextRequest) {
               exerciseId: ex.exerciseId,
               order: index + 1,
               sets: ex.sets,
-              reps: ex.reps,
+              reps: Array.isArray(ex.reps) ? ex.reps : [ex.reps], // Ensure reps is always an array
               weight: ex.weight,
               restTime: ex.restTime,
               notes: ex.notes,

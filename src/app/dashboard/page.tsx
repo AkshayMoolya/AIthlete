@@ -22,6 +22,7 @@ import { LoadingSpinner } from "@/components/dashboard/loading-spinner";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/layout/header";
 
+// Define interface for dashboard data
 interface DashboardData {
   weeklyStats: {
     workouts: number;
@@ -47,6 +48,10 @@ interface DashboardData {
     weeklyProgress: number;
     monthlyProgress: number;
     currentStreak: number;
+    weeklyGoalCurrent: number;
+    weeklyGoalTarget: number;
+    monthlyGoalCurrent: number;
+    monthlyGoalTarget: number;
   };
   upcomingWorkouts: Array<{
     id: string;
@@ -62,6 +67,7 @@ export default function Dashboard() {
     null
   );
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (session) {
@@ -71,13 +77,19 @@ export default function Dashboard() {
 
   const fetchDashboardData = async () => {
     try {
+      setLoading(true);
       const response = await fetch("/api/dashboard");
-      if (response.ok) {
-        const data = await response.json();
-        setDashboardData(data);
+
+      if (!response.ok) {
+        throw new Error(`Error fetching dashboard data: ${response.status}`);
       }
+
+      const data = await response.json();
+      setDashboardData(data);
+      setError(null);
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
+      setError("Failed to load dashboard data. Please try again later.");
     } finally {
       setLoading(false);
     }
@@ -87,6 +99,21 @@ export default function Dashboard() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <LoadingSpinner text="Loading dashboard..." />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Card>
+          <CardContent className="p-6">
+            <p className="text-center text-red-500 mb-4">{error}</p>
+            <Button onClick={fetchDashboardData} className="mx-auto block">
+              Try Again
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -269,15 +296,16 @@ export default function Dashboard() {
                   <div className="flex justify-between text-sm mb-3">
                     <span>Weekly Goal</span>
                     <span className="font-semibold">
-                      {Math.round(
-                        ((dashboardData?.quickStats?.weeklyProgress || 0) * 5) /
-                          100
-                      )}
-                      /5
+                      {dashboardData?.quickStats?.weeklyGoalCurrent || 0}/
+                      {dashboardData?.quickStats?.weeklyGoalTarget || 0}
                     </span>
                   </div>
                   <Progress
-                    value={dashboardData?.quickStats?.weeklyProgress || 0}
+                    value={
+                      dashboardData?.quickStats?.weeklyGoalTarget
+                        ? dashboardData?.quickStats?.weeklyProgress || 0
+                        : 0
+                    }
                     className="h-3"
                   />
                 </div>
@@ -285,16 +313,16 @@ export default function Dashboard() {
                   <div className="flex justify-between text-sm mb-3">
                     <span>Monthly Goal</span>
                     <span className="font-semibold">
-                      {Math.round(
-                        ((dashboardData?.quickStats?.monthlyProgress || 0) *
-                          16) /
-                          100
-                      )}
-                      /16
+                      {dashboardData?.quickStats?.monthlyGoalCurrent || 0}/
+                      {dashboardData?.quickStats?.monthlyGoalTarget || 0}
                     </span>
                   </div>
                   <Progress
-                    value={dashboardData?.quickStats?.monthlyProgress || 0}
+                    value={
+                      dashboardData?.quickStats?.monthlyGoalTarget
+                        ? dashboardData?.quickStats?.monthlyProgress || 0
+                        : 0
+                    }
                     className="h-3"
                   />
                 </div>

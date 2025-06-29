@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Logo } from "@/src/components/ui/logo";
+import { Logo } from "../ui/logo";
 
 interface FooterProps {
   className?: string;
@@ -43,7 +43,7 @@ export function Footer({ className = "" }: FooterProps) {
               Simple and effective fitness tracking for everyone.
             </p>
           </div>
-          
+
           {footerSections.map((section) => (
             <div key={section.title}>
               <h4 className="font-semibold mb-4">{section.title}</h4>
@@ -62,9 +62,9 @@ export function Footer({ className = "" }: FooterProps) {
             </div>
           ))}
         </div>
-        
+
         <div className="border-t border-border mt-12 pt-8 text-center text-muted-foreground">
-          <p>&copy; 2024 FitTracker. All rights reserved.</p>
+          <p>&copy; 2024 AIthlete. All rights reserved.</p>
         </div>
       </div>
     </footer>

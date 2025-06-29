@@ -27,6 +27,7 @@ model User {
   workouts     Workout[]
   programs     Program[]
   chatSessions ChatSession[]
+  goals        Goal[] // Add relation to goals
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -98,10 +99,10 @@ model Exercise {
   description  String?
   instructions String?
   muscleGroups String[] // Array of muscle groups
-  difficulty   String   @default("Beginner") // "Beginner", "Intermediate", "Advanced"
 
   // Relations
   workoutExercises WorkoutExercise[]
+  exerciseLogs     ExerciseLog[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -113,7 +114,6 @@ model Workout {
   description       String?
   isPublic          Boolean  @default(false)
   estimatedDuration Int? // in minutes
-  difficulty        String   @default("Beginner")
   tags              String[] // Array of tags
 
   // Relations
@@ -225,12 +225,13 @@ model ExerciseLog {
   sessionId  String         @db.ObjectId
   session    WorkoutSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   exerciseId String         @db.ObjectId
+  exercise   Exercise       @relation(fields: [exerciseId], references: [id])
 
   // Performance data
   sets     Int
   reps     Int[]
   weight   Float[]
-  restTime Int[] // Changed from Int[]? to Int[]
+  restTime Int[]
   notes    String?
 
   createdAt DateTime @default(now())
@@ -265,4 +266,24 @@ model ChatMessage {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// Add Goal model
+model Goal {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String    @db.ObjectId
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name          String
+  targetValue   Float
+  currentValue  Float     @default(0)
+  type          String // "weight", "consistency", "performance", etc.
+  status        String    @default("active") // "active", "completed", "abandoned"
+  deadline      DateTime?
+  startDate     DateTime  @default(now())
+  completedDate DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
 }

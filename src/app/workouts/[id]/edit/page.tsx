@@ -2,44 +2,29 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Dumbbell, Plus, X, Search, Save, ArrowLeft } from "lucide-react";
+import { ArrowLeft, Save, Plus, X, Search } from "lucide-react";
 import Link from "next/link";
-
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { Workout, Exercise, WorkoutExercise } from "@/lib/types";
+import { toast } from "sonner";
 
-interface Exercise {
-  id: string;
-  name: string;
-  category: string;
-  equipment: string;
+interface EditWorkoutProps {
+  params: {
+    id: string;
+  };
 }
 
-interface WorkoutExercise {
-  exerciseId: string;
-  exercise: Exercise;
-  sets: number;
-  reps: number[]; // Changed from number to number[]
-  weight?: number;
-  restTime?: number;
-  notes?: string;
-}
-
-export default function CreateWorkout() {
+export default function EditWorkout({ params }: EditWorkoutProps) {
   const router = useRouter();
+  const workoutId = params.id;
+
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [estimatedDuration, setEstimatedDuration] = useState("");
@@ -52,22 +37,50 @@ export default function CreateWorkout() {
   const [availableExercises, setAvailableExercises] = useState<Exercise[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isFetching, setIsFetching] = useState(true);
 
+  // Fetch workout data
   useEffect(() => {
-    fetchExercises();
-  }, []);
+    const fetchWorkout = async () => {
+      try {
+        const response = await fetch(`/api/workouts/${workoutId}`);
+        if (response.ok) {
+          const workout = await response.json();
 
-  const fetchExercises = async () => {
-    try {
-      const response = await fetch("/api/exercises");
-      if (response.ok) {
-        const data = await response.json();
-        setAvailableExercises(data);
+          // Set form data from workout
+          setName(workout.name);
+          setDescription(workout.description || "");
+          setEstimatedDuration(workout.estimatedDuration?.toString() || "");
+          setIsPublic(workout.isPublic);
+          setTags(workout.tags);
+          setWorkoutExercises(workout.exercises);
+        } else {
+          toast.error("Failed to load workout data");
+          router.push("/workouts");
+        }
+      } catch (error) {
+        console.error("Error fetching workout:", error);
+        toast.error("An unexpected error occurred");
+      } finally {
+        setIsFetching(false);
       }
-    } catch (error) {
-      console.error("Error fetching exercises:", error);
-    }
-  };
+    };
+
+    const fetchExercises = async () => {
+      try {
+        const response = await fetch("/api/exercises");
+        if (response.ok) {
+          const data = await response.json();
+          setAvailableExercises(data);
+        }
+      } catch (error) {
+        console.error("Error fetching exercises:", error);
+      }
+    };
+
+    fetchWorkout();
+    fetchExercises();
+  }, [workoutId, router]);
 
   const addTag = () => {
     if (newTag.trim() && !tags.includes(newTag.trim())) {
@@ -82,11 +95,16 @@ export default function CreateWorkout() {
 
   const addExercise = (exercise: Exercise) => {
     const newWorkoutExercise: WorkoutExercise = {
+      id: `temp-${Date.now()}`, // Will be replaced by server
+      workoutId,
       exerciseId: exercise.id,
       exercise,
+      order: workoutExercises.length + 1,
       sets: 3,
-      reps: [10], // Changed from 10 to [10]
+      reps: [10],
       restTime: 60,
+      autoIncrease: false,
+      increaseAfterSessions: 1,
     };
     setWorkoutExercises([...workoutExercises, newWorkoutExercise]);
   };
@@ -107,20 +125,20 @@ export default function CreateWorkout() {
 
   const handleSave = async () => {
     if (!name.trim()) {
-      alert("Please enter a workout name");
+      toast.error("Please enter a workout name");
       return;
     }
 
     if (workoutExercises.length === 0) {
-      alert("Please add at least one exercise");
+      toast.error("Please add at least one exercise");
       return;
     }
 
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/workouts", {
-        method: "POST",
+      const response = await fetch(`/api/workouts/${workoutId}`, {
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
@@ -133,26 +151,40 @@ export default function CreateWorkout() {
           isPublic,
           tags,
           exercises: workoutExercises.map(
-            ({ exerciseId, sets, reps, weight, restTime, notes }) => ({
+            ({
               exerciseId,
               sets,
               reps,
               weight,
               restTime,
               notes,
+              autoIncrease,
+              increaseAmount,
+              increaseAfterSessions,
+            }) => ({
+              exerciseId,
+              sets,
+              reps,
+              weight,
+              restTime,
+              notes,
+              autoIncrease,
+              increaseAmount,
+              increaseAfterSessions,
             })
           ),
         }),
       });
 
       if (response.ok) {
+        toast.success("Workout updated successfully");
         router.push("/workouts");
       } else {
-        alert("Failed to create workout");
+        toast.error("Failed to update workout");
       }
     } catch (error) {
-      console.error("Error creating workout:", error);
-      alert("An error occurred while creating the workout");
+      console.error("Error updating workout:", error);
+      toast.error("An unexpected error occurred");
     } finally {
       setIsLoading(false);
     }
@@ -163,6 +195,17 @@ export default function CreateWorkout() {
       exercise.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
       !workoutExercises.some((we) => we.exerciseId === exercise.id)
   );
+
+  if (isFetching) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p>Loading workout data...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -181,7 +224,7 @@ export default function CreateWorkout() {
             <ThemeToggle />
             <Button onClick={handleSave} disabled={isLoading}>
               <Save className="w-4 h-4 mr-2" />
-              {isLoading ? "Saving..." : "Save Workout"}
+              {isLoading ? "Saving..." : "Save Changes"}
             </Button>
           </div>
         </div>
@@ -190,10 +233,9 @@ export default function CreateWorkout() {
       <div className="container mx-auto px-6 py-8">
         <div className="max-w-5xl mx-auto">
           <div className="mb-12">
-            <h1 className="text-4xl font-bold mb-3">Create New Workout</h1>
+            <h1 className="text-4xl font-bold mb-3">Edit Workout</h1>
             <p className="text-muted-foreground text-lg">
-              Build your custom workout routine by adding exercises and setting
-              details.
+              Update your workout details and exercises
             </p>
           </div>
 
@@ -293,7 +335,7 @@ export default function CreateWorkout() {
                     <div className="space-y-4 mb-6">
                       {workoutExercises.map((workoutExercise, index) => (
                         <div
-                          key={index}
+                          key={workoutExercise.id || index}
                           className="p-4 border rounded-lg space-y-4"
                         >
                           <div className="flex items-start justify-between">
@@ -336,13 +378,11 @@ export default function CreateWorkout() {
                               <Label className="text-xs">Reps</Label>
                               <Input
                                 type="number"
-                                value={workoutExercise.reps[0] || ""} // Access first element of the array
+                                value={workoutExercise.reps?.[0] ?? ""}
                                 onChange={(e) =>
-                                  updateExercise(
-                                    index,
-                                    "reps",
-                                    [parseInt(e.target.value) || 0] // Wrap in array
-                                  )
+                                  updateExercise(index, "reps", [
+                                    parseInt(e.target.value) || 0,
+                                  ])
                                 }
                                 min="1"
                               />

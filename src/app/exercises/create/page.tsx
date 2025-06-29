@@ -40,21 +40,18 @@ const equipmentTypes = [
   "Other",
 ];
 
-const difficulties = ["Beginner", "Intermediate", "Advanced"];
-
 export default function CreateExercise() {
   const router = useRouter();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
   const [equipment, setEquipment] = useState("");
-  const [difficulty, setDifficulty] = useState("");
   const [instructions, setInstructions] = useState("");
   const [targetMuscles, setTargetMuscles] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSave = async () => {
-    if (!name.trim() || !category || !equipment || !difficulty) {
+    if (!name.trim() || !category || !equipment) {
       alert("Please fill in all required fields");
       return;
     }
@@ -72,7 +69,6 @@ export default function CreateExercise() {
           description,
           category,
           equipment,
-          difficulty,
           instructions,
           targetMuscles: targetMuscles
             .split(",")
@@ -124,95 +120,81 @@ export default function CreateExercise() {
               <CardTitle>Exercise Details</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div>
-                <Label htmlFor="name">Exercise Name *</Label>
-                <Input
-                  id="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g., Barbell Bench Press"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                  id="description"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Brief description of the exercise..."
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-4">
                 <div>
-                  <Label htmlFor="category">Category *</Label>
-                  <Select value={category} onValueChange={setCategory}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {categories.map((cat) => (
-                        <SelectItem key={cat} value={cat}>
-                          {cat}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Label htmlFor="name">Exercise Name *</Label>
+                  <Input
+                    id="name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="e.g., Barbell Bench Press"
+                  />
                 </div>
 
                 <div>
-                  <Label htmlFor="equipment">Equipment *</Label>
-                  <Select value={equipment} onValueChange={setEquipment}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select equipment" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {equipmentTypes.map((eq) => (
-                        <SelectItem key={eq} value={eq}>
-                          {eq}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Label htmlFor="description">Description</Label>
+                  <Textarea
+                    id="description"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Brief description of the exercise..."
+                  />
                 </div>
-              </div>
 
-              <div>
-                <Label htmlFor="difficulty">Difficulty *</Label>
-                <Select value={difficulty} onValueChange={setDifficulty}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select difficulty" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {difficulties.map((diff) => (
-                      <SelectItem key={diff} value={diff}>
-                        {diff}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="category">Category *</Label>
+                    <Select value={category} onValueChange={setCategory}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {categories.map((cat) => (
+                          <SelectItem key={cat} value={cat}>
+                            {cat}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-              <div>
-                <Label htmlFor="targetMuscles">Target Muscles</Label>
-                <Input
-                  id="targetMuscles"
-                  value={targetMuscles}
-                  onChange={(e) => setTargetMuscles(e.target.value)}
-                  placeholder="e.g., Chest, Triceps, Shoulders (comma separated)"
-                />
-              </div>
+                  <div>
+                    <Label htmlFor="equipment">Equipment *</Label>
+                    <Select value={equipment} onValueChange={setEquipment}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select equipment" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {equipmentTypes.map((eq) => (
+                          <SelectItem key={eq} value={eq}>
+                            {eq}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
 
-              <div>
-                <Label htmlFor="instructions">Instructions</Label>
-                <Textarea
-                  id="instructions"
-                  value={instructions}
-                  onChange={(e) => setInstructions(e.target.value)}
-                  placeholder="Step-by-step instructions for performing the exercise..."
-                  rows={6}
-                />
+                <div>
+                  <Label htmlFor="targetMuscles">Target Muscles</Label>
+                  <Input
+                    id="targetMuscles"
+                    value={targetMuscles}
+                    onChange={(e) => setTargetMuscles(e.target.value)}
+                    placeholder="e.g., Chest, Triceps, Shoulders (comma separated)"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="instructions">Instructions</Label>
+                  <Textarea
+                    id="instructions"
+                    value={instructions}
+                    onChange={(e) => setInstructions(e.target.value)}
+                    placeholder="Step-by-step instructions for performing the exercise..."
+                    rows={6}
+                  />
+                </div>
               </div>
             </CardContent>
           </Card>

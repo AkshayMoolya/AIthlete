@@ -1,5 +1,5 @@
-import { Card, CardContent } from "@/src/components/ui/card";
 import { LucideIcon } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface FeatureCardProps {
   icon: LucideIcon;
@@ -8,14 +8,16 @@ interface FeatureCardProps {
   className?: string;
 }
 
-export function FeatureCard({ 
-  icon: Icon, 
-  title, 
+export function FeatureCard({
+  icon: Icon,
+  title,
   description,
-  className = ""
+  className = "",
 }: FeatureCardProps) {
   return (
-    <Card className={`border-0 bg-card hover:shadow-lg transition-all duration-300 ${className}`}>
+    <Card
+      className={`border-0 bg-card hover:shadow-lg transition-all duration-300 ${className}`}
+    >
       <CardContent className="p-8">
         <div className="w-12 h-12 bg-foreground rounded-xl flex items-center justify-center mb-6">
           <Icon className="w-6 h-6 text-background" />

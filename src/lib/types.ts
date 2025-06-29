@@ -17,7 +17,6 @@ export interface Exercise {
   description?: string;
   instructions?: string;
   muscleGroups: string[];
-  difficulty: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -44,7 +43,6 @@ export interface Workout {
   description?: string;
   isPublic: boolean;
   estimatedDuration?: number;
-  difficulty: string;
   tags: string[];
   userId: string;
   user: User;
@@ -96,6 +94,7 @@ export interface ExerciseLog {
   id: string;
   sessionId: string;
   exerciseId: string;
+  exercise?: Exercise;
   sets: number;
   reps: number[];
   weight: number[];

@@ -4,11 +4,11 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ThemeToggle } from "@/src/components/theme-toggle";
-import { Card, CardContent } from "@/src/components/ui/card";
-import { Label } from "@/src/components/ui/label";
-import { Input } from "@/src/components/ui/input";
-import { Button } from "@/src/components/ui/button";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 import { Dumbbell, ArrowRight } from "lucide-react";
 
@@ -83,9 +83,7 @@ export default function SignUp() {
             <div className="w-12 h-12 bg-foreground rounded-2xl flex items-center justify-center">
               <Dumbbell className="w-7 h-7 text-background" />
             </div>
-            <span className="text-3xl font-bold text-foreground">
-              FitTracker
-            </span>
+            <span className="text-3xl font-bold text-foreground">AIthlete</span>
           </div>
           <h1 className="text-2xl font-bold mb-2">Create Account</h1>
           <p className="text-muted-foreground">

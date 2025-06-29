@@ -45,8 +45,7 @@ export async function POST(request: NextRequest) {
       equipment,
       description,
       instructions,
-      muscleGroups,
-      difficulty,
+      targetMuscles,
     } = await request.json();
 
     const exercise = await db.exercise.create({
@@ -56,8 +55,7 @@ export async function POST(request: NextRequest) {
         equipment,
         description,
         instructions,
-        muscleGroups,
-        difficulty: difficulty || "Beginner",
+        muscleGroups: targetMuscles,
       },
     });
 

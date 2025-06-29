@@ -72,7 +72,7 @@ export default async function Home() {
                 <div className="relative max-w-4xl mx-auto">
                   <Image
                     src="/placeholder.svg?height=500&width=900"
-                    alt="FitTracker App Dashboard"
+                    alt="AIthlete App Dashboard"
                     width={900}
                     height={500}
                     className="rounded-2xl shadow-2xl border border-border/50"
