@@ -20,6 +20,14 @@ model User {
   // Optional for WebAuthn support
   Authenticator Authenticator[]
 
+  // New fitness-related fields
+  preferredUnit String @default("kg") // "kg" or "lbs"
+
+  // Relations
+  workouts     Workout[]
+  programs     Program[]
+  chatSessions ChatSession[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -80,4 +88,181 @@ model Authenticator {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, credentialID])
+}
+
+model Exercise {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  category     String // "Chest", "Back", "Legs", etc.
+  equipment    String // "Barbell", "Dumbbell", "Bodyweight", etc.
+  description  String?
+  instructions String?
+  muscleGroups String[] // Array of muscle groups
+  difficulty   String   @default("Beginner") // "Beginner", "Intermediate", "Advanced"
+
+  // Relations
+  workoutExercises WorkoutExercise[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Workout {
+  id                String   @id @default(auto()) @map("_id") @db.ObjectId
+  name              String
+  description       String?
+  isPublic          Boolean  @default(false)
+  estimatedDuration Int? // in minutes
+  difficulty        String   @default("Beginner")
+  tags              String[] // Array of tags
+
+  // Relations
+  userId    String            @db.ObjectId
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exercises WorkoutExercise[]
+  sessions  WorkoutSession[]
+  programs  ProgramWorkout[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isPublic])
+  @@index([userId])
+}
+
+model WorkoutExercise {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  // Relations
+  workoutId  String   @db.ObjectId
+  workout    Workout  @relation(fields: [workoutId], references: [id], onDelete: Cascade)
+  exerciseId String   @db.ObjectId
+  exercise   Exercise @relation(fields: [exerciseId], references: [id])
+
+  // Exercise configuration
+  order    Int
+  sets     Int
+  reps     Int[] // Changed from Int[]? to Int[]
+  weight   Float?
+  restTime Int? // in seconds
+  notes    String?
+
+  // Auto-progression settings
+  autoIncrease          Boolean @default(false)
+  increaseAmount        Float?
+  increaseAfterSessions Int     @default(1)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Program {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  description String?
+  duration    Int // in weeks
+  difficulty  String   @default("Beginner")
+  isPublic    Boolean  @default(false)
+  tags        String[]
+
+  // Relations
+  userId   String           @db.ObjectId
+  user     User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workouts ProgramWorkout[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isPublic])
+  @@index([userId])
+}
+
+model ProgramWorkout {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  // Relations
+  programId String  @db.ObjectId
+  program   Program @relation(fields: [programId], references: [id], onDelete: Cascade)
+  workoutId String  @db.ObjectId
+  workout   Workout @relation(fields: [workoutId], references: [id])
+
+  // Schedule
+  weekNumber Int
+  dayOfWeek  Int // 1-7 (Monday-Sunday)
+  order      Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model WorkoutSession {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  // Relations
+  userId    String  @db.ObjectId
+  workoutId String  @db.ObjectId
+  workout   Workout @relation(fields: [workoutId], references: [id])
+
+  // Session data
+  startTime DateTime
+  endTime   DateTime?
+  completed Boolean   @default(false)
+  notes     String?
+
+  // Exercise logs
+  exerciseLogs ExerciseLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model ExerciseLog {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  // Relations
+  sessionId  String         @db.ObjectId
+  session    WorkoutSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  exerciseId String         @db.ObjectId
+
+  // Performance data
+  sets     Int
+  reps     Int[]
+  weight   Float[]
+  restTime Int[] // Changed from Int[]? to Int[]
+  notes    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ChatSession {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  // Relations
+  userId String @db.ObjectId
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title    String?
+  messages ChatMessage[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model ChatMessage {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  // Relations
+  sessionId String      @db.ObjectId
+  session   ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  role    String // "user" or "assistant"
+  content String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

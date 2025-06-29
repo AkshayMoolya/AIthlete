@@ -1,7 +1,7 @@
 "use client";
 
 import { useSession, signOut } from "next-auth/react";
-
+import { useEffect, useState } from "react";
 import {
   BarChart3,
   Calendar,
@@ -14,26 +14,79 @@ import {
   Trophy,
   User,
 } from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/src/components/ui/card";
-import { Button } from "@/src/components/ui/button";
 import Link from "next/link";
-import { Badge } from "@/src/components/ui/badge";
-import { Header } from "@/src/components/layout/header";
-import { LoadingSpinner } from "@/src/components/dashboard/loading-spinner";
-import { Progress } from "@/src/components/ui/progress";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { LoadingSpinner } from "@/components/dashboard/loading-spinner";
+import { Button } from "@/components/ui/button";
+import { Header } from "@/components/layout/header";
+
+interface DashboardData {
+  weeklyStats: {
+    workouts: number;
+    totalTime: string;
+    calories: number;
+  };
+  recentWorkouts: Array<{
+    id: string;
+    name: string;
+    completedAt: string;
+    duration: number;
+    exerciseCount: number;
+    calories?: number;
+  }>;
+  goals: Array<{
+    id: string;
+    title: string;
+    current: string;
+    target: string;
+    progress: number;
+  }>;
+  quickStats: {
+    weeklyProgress: number;
+    monthlyProgress: number;
+    currentStreak: number;
+  };
+  upcomingWorkouts: Array<{
+    id: string;
+    date: string;
+    name: string;
+    description: string;
+  }>;
+}
 
 export default function Dashboard() {
   const { data: session, status } = useSession();
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(
+    null
+  );
+  const [loading, setLoading] = useState(true);
 
-  if (status === "loading") {
+  useEffect(() => {
+    if (session) {
+      fetchDashboardData();
+    }
+  }, [session]);
+
+  const fetchDashboardData = async () => {
+    try {
+      const response = await fetch("/api/dashboard");
+      if (response.ok) {
+        const data = await response.json();
+        setDashboardData(data);
+      }
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (status === "loading" || loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <LoadingSpinner text="Loading..." />
+        <LoadingSpinner text="Loading dashboard..." />
       </div>
     );
   }
@@ -54,16 +107,18 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header 
-        variant="dashboard" 
-        user={session.user} 
-        onSignOut={() => signOut()} 
+      <Header
+        variant="dashboard"
+        user={session.user}
+        onSignOut={() => signOut()}
       />
 
       <div className="container mx-auto px-6 py-8">
         {/* Welcome Section */}
         <div className="mb-12">
-          <h1 className="text-4xl font-bold mb-3">Good morning, Alex</h1>
+          <h1 className="text-4xl font-bold mb-3">
+            Good morning, {session.user?.name?.split(" ")[0] || "there"}
+          </h1>
           <p className="text-muted-foreground text-lg">
             Ready for today's workout?
           </p>
@@ -77,17 +132,23 @@ export default function Dashboard() {
               <Button
                 size="lg"
                 className="h-16 justify-start space-x-4 bg-foreground text-background hover:bg-foreground/90"
+                asChild
               >
-                <Plus className="w-6 h-6" />
-                <span className="text-lg font-medium">Start Workout</span>
+                <Link href="/workouts/create">
+                  <Plus className="w-6 h-6" />
+                  <span className="text-lg font-medium">Start Workout</span>
+                </Link>
               </Button>
               <Button
                 size="lg"
                 variant="outline"
                 className="h-16 justify-start space-x-4"
+                asChild
               >
-                <BarChart3 className="w-6 h-6" />
-                <span className="text-lg font-medium">View Progress</span>
+                <Link href="/progress">
+                  <BarChart3 className="w-6 h-6" />
+                  <span className="text-lg font-medium">View Progress</span>
+                </Link>
               </Button>
             </div>
 
@@ -105,68 +166,52 @@ export default function Dashboard() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="p-4 border border-border rounded-xl hover:bg-muted/50 transition-colors cursor-pointer">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-semibold">Upper Body Strength</h4>
-                    <Badge variant="secondary">Completed</Badge>
-                  </div>
-                  <div className="flex items-center space-x-6 text-sm text-muted-foreground">
-                    <span className="flex items-center space-x-2">
-                      <Calendar className="w-4 h-4" />
-                      <span>Yesterday</span>
-                    </span>
-                    <span className="flex items-center space-x-2">
-                      <Clock className="w-4 h-4" />
-                      <span>45 min</span>
-                    </span>
-                    <span className="flex items-center space-x-2">
-                      <Target className="w-4 h-4" />
-                      <span>8 exercises</span>
-                    </span>
-                  </div>
-                </div>
-
-                <div className="p-4 border border-border rounded-xl hover:bg-muted/50 transition-colors cursor-pointer">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-semibold">Cardio Session</h4>
-                    <Badge variant="secondary">Completed</Badge>
-                  </div>
-                  <div className="flex items-center space-x-6 text-sm text-muted-foreground">
-                    <span className="flex items-center space-x-2">
-                      <Calendar className="w-4 h-4" />
-                      <span>2 days ago</span>
-                    </span>
-                    <span className="flex items-center space-x-2">
-                      <Clock className="w-4 h-4" />
-                      <span>30 min</span>
-                    </span>
-                    <span className="flex items-center space-x-2">
-                      <Flame className="w-4 h-4" />
-                      <span>320 cal</span>
-                    </span>
-                  </div>
-                </div>
-
-                <div className="p-4 border border-border rounded-xl hover:bg-muted/50 transition-colors cursor-pointer">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-semibold">Lower Body Strength</h4>
-                    <Badge variant="secondary">Completed</Badge>
-                  </div>
-                  <div className="flex items-center space-x-6 text-sm text-muted-foreground">
-                    <span className="flex items-center space-x-2">
-                      <Calendar className="w-4 h-4" />
-                      <span>3 days ago</span>
-                    </span>
-                    <span className="flex items-center space-x-2">
-                      <Clock className="w-4 h-4" />
-                      <span>50 min</span>
-                    </span>
-                    <span className="flex items-center space-x-2">
-                      <Target className="w-4 h-4" />
-                      <span>6 exercises</span>
-                    </span>
-                  </div>
-                </div>
+                {dashboardData?.recentWorkouts &&
+                dashboardData.recentWorkouts.length > 0 ? (
+                  dashboardData.recentWorkouts.map((workout) => (
+                    <div
+                      key={workout.id}
+                      className="p-4 border border-border rounded-xl hover:bg-muted/50 transition-colors cursor-pointer"
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-semibold">{workout.name}</h4>
+                        <Badge variant="secondary">Completed</Badge>
+                      </div>
+                      <div className="flex items-center space-x-6 text-sm text-muted-foreground">
+                        <span className="flex items-center space-x-2">
+                          <Calendar className="w-4 h-4" />
+                          <span>
+                            {new Date(workout.completedAt).toLocaleDateString()}
+                          </span>
+                        </span>
+                        <span className="flex items-center space-x-2">
+                          <Clock className="w-4 h-4" />
+                          <span>{workout.duration} min</span>
+                        </span>
+                        <span className="flex items-center space-x-2">
+                          <Target className="w-4 h-4" />
+                          <span>{workout.exerciseCount} exercises</span>
+                        </span>
+                        {workout.calories && (
+                          <span className="flex items-center space-x-2">
+                            <Flame className="w-4 h-4" />
+                            <span>{workout.calories} cal</span>
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-center text-muted-foreground py-8">
+                    No recent workouts.{" "}
+                    <Link
+                      href="/workouts/create"
+                      className="text-foreground hover:underline"
+                    >
+                      Create your first workout
+                    </Link>
+                  </p>
+                )}
               </CardContent>
             </Card>
 
@@ -184,21 +229,27 @@ export default function Dashboard() {
                     <div className="w-16 h-16 bg-muted rounded-2xl flex items-center justify-center mx-auto mb-4">
                       <Trophy className="w-8 h-8" />
                     </div>
-                    <div className="text-3xl font-bold mb-1">4</div>
+                    <div className="text-3xl font-bold mb-1">
+                      {dashboardData?.weeklyStats?.workouts || 0}
+                    </div>
                     <div className="text-muted-foreground">Workouts</div>
                   </div>
                   <div className="text-center">
                     <div className="w-16 h-16 bg-muted rounded-2xl flex items-center justify-center mx-auto mb-4">
                       <Clock className="w-8 h-8" />
                     </div>
-                    <div className="text-3xl font-bold mb-1">3.2h</div>
+                    <div className="text-3xl font-bold mb-1">
+                      {dashboardData?.weeklyStats?.totalTime || "0h"}
+                    </div>
                     <div className="text-muted-foreground">Total Time</div>
                   </div>
                   <div className="text-center">
                     <div className="w-16 h-16 bg-muted rounded-2xl flex items-center justify-center mx-auto mb-4">
                       <Flame className="w-8 h-8" />
                     </div>
-                    <div className="text-3xl font-bold mb-1">1,240</div>
+                    <div className="text-3xl font-bold mb-1">
+                      {dashboardData?.weeklyStats?.calories || 0}
+                    </div>
                     <div className="text-muted-foreground">Calories</div>
                   </div>
                 </div>
@@ -217,23 +268,50 @@ export default function Dashboard() {
                 <div>
                   <div className="flex justify-between text-sm mb-3">
                     <span>Weekly Goal</span>
-                    <span className="font-semibold">4/5</span>
+                    <span className="font-semibold">
+                      {Math.round(
+                        ((dashboardData?.quickStats?.weeklyProgress || 0) * 5) /
+                          100
+                      )}
+                      /5
+                    </span>
                   </div>
-                  <Progress value={80} className="h-3" />
+                  <Progress
+                    value={dashboardData?.quickStats?.weeklyProgress || 0}
+                    className="h-3"
+                  />
                 </div>
                 <div>
                   <div className="flex justify-between text-sm mb-3">
                     <span>Monthly Goal</span>
-                    <span className="font-semibold">12/16</span>
+                    <span className="font-semibold">
+                      {Math.round(
+                        ((dashboardData?.quickStats?.monthlyProgress || 0) *
+                          16) /
+                          100
+                      )}
+                      /16
+                    </span>
                   </div>
-                  <Progress value={75} className="h-3" />
+                  <Progress
+                    value={dashboardData?.quickStats?.monthlyProgress || 0}
+                    className="h-3"
+                  />
                 </div>
                 <div>
                   <div className="flex justify-between text-sm mb-3">
                     <span>Current Streak</span>
-                    <span className="font-semibold">7 days</span>
+                    <span className="font-semibold">
+                      {dashboardData?.quickStats?.currentStreak || 0} days
+                    </span>
                   </div>
-                  <Progress value={100} className="h-3" />
+                  <Progress
+                    value={Math.min(
+                      (dashboardData?.quickStats?.currentStreak || 0) * 10,
+                      100
+                    )}
+                    className="h-3"
+                  />
                 </div>
               </CardContent>
             </Card>
@@ -247,35 +325,28 @@ export default function Dashboard() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="p-3 border border-border rounded-lg">
-                  <div className="font-medium text-sm mb-1">
-                    Bench Press 225 lbs
-                  </div>
-                  <div className="text-xs text-muted-foreground mb-2">
-                    Current: 210 lbs
-                  </div>
-                  <Progress value={93} className="h-2" />
-                </div>
-                <div className="p-3 border border-border rounded-lg">
-                  <div className="font-medium text-sm mb-1">
-                    Run 5K under 25 min
-                  </div>
-                  <div className="text-xs text-muted-foreground mb-2">
-                    Current: 26:30
-                  </div>
-                  <Progress value={85} className="h-2" />
-                </div>
-                <div className="p-3 border border-border rounded-lg">
-                  <div className="font-medium text-sm mb-1">
-                    Workout 5x per week
-                  </div>
-                  <div className="text-xs text-muted-foreground mb-2">
-                    This week: 4/5
-                  </div>
-                  <Progress value={80} className="h-2" />
-                </div>
-                <Button variant="outline" className="w-full mt-4">
-                  Manage Goals
+                {dashboardData?.goals && dashboardData.goals.length > 0 ? (
+                  dashboardData.goals.map((goal) => (
+                    <div
+                      key={goal.id}
+                      className="p-3 border border-border rounded-lg"
+                    >
+                      <div className="font-medium text-sm mb-1">
+                        {goal.title}
+                      </div>
+                      <div className="text-xs text-muted-foreground mb-2">
+                        Current: {goal.current}
+                      </div>
+                      <Progress value={goal.progress} className="h-2" />
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    No active goals
+                  </p>
+                )}
+                <Button variant="outline" className="w-full mt-4" asChild>
+                  <Link href="/goals">Manage Goals</Link>
                 </Button>
               </CardContent>
             </Card>
@@ -289,33 +360,35 @@ export default function Dashboard() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="p-4 bg-muted/50 rounded-xl">
-                  <div className="font-semibold text-sm mb-1">Today</div>
-                  <div className="text-sm text-muted-foreground mb-2">
-                    Rest Day
+                {dashboardData?.upcomingWorkouts &&
+                dashboardData.upcomingWorkouts.length > 0 ? (
+                  dashboardData.upcomingWorkouts.map((workout) => (
+                    <div
+                      key={workout.id}
+                      className="p-4 border border-border rounded-xl"
+                    >
+                      <div className="font-semibold text-sm mb-1">
+                        {workout.date}
+                      </div>
+                      <div className="text-sm text-muted-foreground mb-2">
+                        {workout.name}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {workout.description}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="p-4 bg-muted/50 rounded-xl">
+                    <div className="font-semibold text-sm mb-1">Today</div>
+                    <div className="text-sm text-muted-foreground mb-2">
+                      Rest Day
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      Recovery and stretching
+                    </div>
                   </div>
-                  <div className="text-xs text-muted-foreground">
-                    Recovery and stretching
-                  </div>
-                </div>
-                <div className="p-4 border border-border rounded-xl">
-                  <div className="font-semibold text-sm mb-1">Tomorrow</div>
-                  <div className="text-sm text-muted-foreground mb-2">
-                    Lower Body
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    Squats, deadlifts, lunges
-                  </div>
-                </div>
-                <div className="p-4 border border-border rounded-xl">
-                  <div className="font-semibold text-sm mb-1">Friday</div>
-                  <div className="text-sm text-muted-foreground mb-2">
-                    Cardio
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    30 min running
-                  </div>
-                </div>
+                )}
               </CardContent>
             </Card>
           </div>

@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Button } from "@/src/components/ui/button";
-import { ThemeToggle } from "@/src/components/theme-toggle";
+import { Button } from "../ui/button";
+import { ThemeToggle } from "../theme-toggle";
 import { Logo } from "../ui/logo";
 
 interface HeaderProps {

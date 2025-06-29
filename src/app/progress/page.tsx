@@ -1,19 +1,3 @@
-import { Progress } from "@/components/ui/progress";
-import { ThemeToggle } from "@/src/components/theme-toggle";
-import { Badge } from "@/src/components/ui/badge";
-import { Button } from "@/src/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/src/components/ui/card";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/src/components/ui/tabs";
 import {
   Dumbbell,
   TrendingUp,
@@ -24,6 +8,13 @@ import {
   BarChart3,
   Activity,
 } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { Badge } from "@/components/ui/badge";
+
 import Link from "next/link";
 
 export default function ProgressPage() {
