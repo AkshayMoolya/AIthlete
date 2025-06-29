@@ -33,9 +33,14 @@ export async function GET(
       );
     }
 
-    // Check if the workout is public or belongs to the current user
-    if (!workout.isPublic && workout.userId !== session?.user?.id) {
+    // Always require authentication, then check if workout is accessible
+    if (!session?.user?.id) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
+    // Check if the workout is public or belongs to the current user
+    if (!workout.isPublic && workout.userId !== session.user.id) {
+      return NextResponse.json({ message: "Forbidden" }, { status: 403 });
     }
 
     return NextResponse.json(workout);

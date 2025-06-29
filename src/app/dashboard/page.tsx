@@ -251,33 +251,39 @@ export default function Dashboard() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid md:grid-cols-3 gap-8">
+                <div className="grid grid-cols-3 sm:grid-cols-3 gap-4 md:gap-8">
                   <div className="text-center">
-                    <div className="w-16 h-16 bg-muted rounded-2xl flex items-center justify-center mx-auto mb-4">
-                      <Trophy className="w-8 h-8" />
+                    <div className="w-12 h-12 md:w-16 md:h-16 bg-muted rounded-2xl flex items-center justify-center mx-auto mb-3 md:mb-4">
+                      <Trophy className="w-6 h-6 md:w-8 md:h-8" />
                     </div>
-                    <div className="text-3xl font-bold mb-1">
+                    <div className="text-xl md:text-3xl font-bold mb-1">
                       {dashboardData?.weeklyStats?.workouts || 0}
                     </div>
-                    <div className="text-muted-foreground">Workouts</div>
+                    <div className="text-xs md:text-sm text-muted-foreground">
+                      Workouts
+                    </div>
                   </div>
                   <div className="text-center">
-                    <div className="w-16 h-16 bg-muted rounded-2xl flex items-center justify-center mx-auto mb-4">
-                      <Clock className="w-8 h-8" />
+                    <div className="w-12 h-12 md:w-16 md:h-16 bg-muted rounded-2xl flex items-center justify-center mx-auto mb-3 md:mb-4">
+                      <Clock className="w-6 h-6 md:w-8 md:h-8" />
                     </div>
-                    <div className="text-3xl font-bold mb-1">
+                    <div className="text-xl md:text-3xl font-bold mb-1">
                       {dashboardData?.weeklyStats?.totalTime || "0h"}
                     </div>
-                    <div className="text-muted-foreground">Total Time</div>
+                    <div className="text-xs md:text-sm text-muted-foreground">
+                      Total Time
+                    </div>
                   </div>
                   <div className="text-center">
-                    <div className="w-16 h-16 bg-muted rounded-2xl flex items-center justify-center mx-auto mb-4">
-                      <Flame className="w-8 h-8" />
+                    <div className="w-12 h-12 md:w-16 md:h-16 bg-muted rounded-2xl flex items-center justify-center mx-auto mb-3 md:mb-4">
+                      <Flame className="w-6 h-6 md:w-8 md:h-8" />
                     </div>
-                    <div className="text-3xl font-bold mb-1">
+                    <div className="text-xl md:text-3xl font-bold mb-1">
                       {dashboardData?.weeklyStats?.calories || 0}
                     </div>
-                    <div className="text-muted-foreground">Calories</div>
+                    <div className="text-xs md:text-sm text-muted-foreground">
+                      Calories
+                    </div>
                   </div>
                 </div>
               </CardContent>

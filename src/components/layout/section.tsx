@@ -8,12 +8,12 @@ interface SectionProps {
   children: ReactNode;
 }
 
-export function Section({ 
+export function Section({
   id,
-  className = "", 
+  className = "",
   background = "default",
   padding = "lg",
-  children 
+  children,
 }: SectionProps) {
   const backgroundClasses = {
     default: "",
@@ -21,14 +21,14 @@ export function Section({
   };
 
   const paddingClasses = {
-    sm: "py-12 px-6",
-    md: "py-16 px-6", 
-    lg: "py-24 px-6",
-    xl: "py-32 px-6",
+    sm: "py-8 sm:py-12 px-4 sm:px-6",
+    md: "py-12 sm:py-16 px-4 sm:px-6",
+    lg: "py-16 sm:py-24 px-4 sm:px-6",
+    xl: "py-20 sm:py-32 px-4 sm:px-6",
   };
 
   return (
-    <section 
+    <section
       id={id}
       className={`${paddingClasses[padding]} ${backgroundClasses[background]} ${className}`}
     >

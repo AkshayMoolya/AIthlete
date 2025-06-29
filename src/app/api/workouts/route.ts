@@ -9,6 +9,11 @@ export async function GET(request: NextRequest) {
     const isPublic = searchParams.get("public") === "true";
     const userId = searchParams.get("userId");
 
+    // If not requesting public workouts, ensure user is authenticated
+    if (!isPublic && !session?.user?.id) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
     const workouts = await db.workout.findMany({
       where: {
         ...(isPublic ? { isPublic: true } : { userId: session?.user?.id }),

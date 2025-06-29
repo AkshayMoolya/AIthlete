@@ -39,14 +39,14 @@ export function Logo({
   };
 
   const content = (
-    <div className={`flex items-center space-x-3 ${className}`}>
+    <div className={`flex items-center ${className}`}>
       <div
-        className={`${sizeClasses[size]} bg-foreground ${roundedClasses[size]} flex items-center justify-center`}
+        className={`${sizeClasses[size]} bg-foreground ${roundedClasses[size]} flex items-center justify-center flex-shrink-0`}
       >
         <Dumbbell className={`${iconSizes[size]} text-background`} />
       </div>
       {showText && (
-        <span className={`${textSizes[size]} font-bold text-foreground`}>
+        <span className={`${textSizes[size]} font-bold text-foreground ml-3`}>
           AIthlete
         </span>
       )}

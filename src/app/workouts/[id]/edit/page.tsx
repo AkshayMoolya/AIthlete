@@ -208,10 +208,10 @@ export default function EditWorkout({ params }: EditWorkoutProps) {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-16 md:pb-0">
       {/* Header */}
       <header className="border-b bg-background/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
+        <div className="container mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <Button variant="ghost" size="sm" asChild>
               <Link href="/workouts">
@@ -222,24 +222,29 @@ export default function EditWorkout({ params }: EditWorkoutProps) {
           </div>
           <div className="flex items-center space-x-3">
             <ThemeToggle />
-            <Button onClick={handleSave} disabled={isLoading}>
+            <Button onClick={handleSave} disabled={isLoading} size="sm">
               <Save className="w-4 h-4 mr-2" />
-              {isLoading ? "Saving..." : "Save Changes"}
+              <span className="sm:inline hidden">
+                {isLoading ? "Saving..." : "Save Changes"}
+              </span>
+              <span className="sm:hidden">{isLoading ? "..." : "Save"}</span>
             </Button>
           </div>
         </div>
       </header>
 
-      <div className="container mx-auto px-6 py-8">
+      <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <div className="max-w-5xl mx-auto">
-          <div className="mb-12">
-            <h1 className="text-4xl font-bold mb-3">Edit Workout</h1>
-            <p className="text-muted-foreground text-lg">
+          <div className="mb-6 sm:mb-12">
+            <h1 className="text-3xl sm:text-4xl font-bold mb-2 sm:mb-3">
+              Edit Workout
+            </h1>
+            <p className="text-muted-foreground text-base sm:text-lg">
               Update your workout details and exercises
             </p>
           </div>
 
-          <div className="grid lg:grid-cols-5 gap-8">
+          <div className="flex flex-col lg:grid lg:grid-cols-5 gap-6 sm:gap-8">
             {/* Workout Details */}
             <div className="lg:col-span-2 space-y-6">
               <Card>
@@ -336,14 +341,14 @@ export default function EditWorkout({ params }: EditWorkoutProps) {
                       {workoutExercises.map((workoutExercise, index) => (
                         <div
                           key={workoutExercise.id || index}
-                          className="p-4 border rounded-lg space-y-4"
+                          className="p-3 sm:p-4 border rounded-lg space-y-4 overflow-hidden"
                         >
                           <div className="flex items-start justify-between">
-                            <div>
-                              <h4 className="font-medium">
+                            <div className="min-w-0 pr-2">
+                              <h4 className="font-medium truncate">
                                 {workoutExercise.exercise.name}
                               </h4>
-                              <p className="text-sm text-muted-foreground">
+                              <p className="text-xs sm:text-sm text-muted-foreground truncate">
                                 {workoutExercise.exercise.category} &bull;{" "}
                                 {workoutExercise.exercise.equipment}
                               </p>
@@ -358,7 +363,7 @@ export default function EditWorkout({ params }: EditWorkoutProps) {
                             </Button>
                           </div>
 
-                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
                             <div>
                               <Label className="text-xs">Sets</Label>
                               <Input

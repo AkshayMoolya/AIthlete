@@ -102,23 +102,23 @@ export default function Workouts() {
       <Card className="border-0 bg-card hover:shadow-lg transition-all duration-300">
         <CardHeader className="pb-4">
           <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <CardTitle className="text-lg mb-3 flex items-center space-x-2">
-                <span>{workout.name}</span>
+            <div className="flex-1 min-w-0">
+              <CardTitle className="text-base sm:text-lg mb-2 sm:mb-3 flex items-center space-x-2 pr-4">
+                <span className="truncate">{workout.name}</span>
                 {workout.isPublic ? (
-                  <Globe className="w-4 h-4 text-green-600" />
+                  <Globe className="w-4 h-4 text-green-600 flex-shrink-0" />
                 ) : (
-                  <Lock className="w-4 h-4 text-muted-foreground" />
+                  <Lock className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                 )}
               </CardTitle>
-              <div className="flex items-center space-x-2 mb-3">
+              <div className="flex items-center flex-wrap gap-2 mb-3">
                 {workout.tags.map((tag) => (
                   <Badge key={tag} variant="secondary">
                     {tag}
                   </Badge>
                 ))}
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-muted-foreground line-clamp-2">
                 {workout.description || "No description provided"}
               </p>
             </div>
@@ -126,7 +126,7 @@ export default function Workouts() {
             {isOwner && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon">
+                  <Button variant="ghost" size="icon" className="flex-shrink-0">
                     <MoreVertical className="w-4 h-4" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -150,17 +150,17 @@ export default function Workouts() {
           </div>
         </CardHeader>
         <CardContent className="pt-0">
-          <div className="flex items-center justify-between text-sm text-muted-foreground mb-6">
-            <span className="flex items-center space-x-2">
-              <Clock className="w-4 h-4" />
-              <span>{workout.estimatedDuration || 45} min</span>
+          <div className="grid grid-cols-3 gap-2 text-xs sm:text-sm text-muted-foreground mb-6">
+            <span className="flex items-center">
+              <Clock className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+              <span>{workout.estimatedDuration || 45}m</span>
             </span>
-            <span className="flex items-center space-x-2">
-              <Target className="w-4 h-4" />
-              <span>{workout.exercises.length} exercises</span>
+            <span className="flex items-center">
+              <Target className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+              <span>{workout.exercises.length}</span>
             </span>
-            <span className="flex items-center space-x-2">
-              <Calendar className="w-4 h-4" />
+            <span className="flex items-center">
+              <Calendar className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
               <span>{new Date(workout.createdAt).toLocaleDateString()}</span>
             </span>
           </div>
@@ -202,19 +202,19 @@ export default function Workouts() {
       {/* Replace custom header with reusable Header component */}
       <Header variant="dashboard" />
 
-      <div className="container mx-auto px-6 py-8">
+      <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
         {/* Header Section */}
-        <div className="flex items-center justify-between mb-12">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 sm:mb-12">
           <div>
-            <h1 className="text-4xl font-bold mb-3">My Workouts</h1>
-            <p className="text-muted-foreground text-lg">
+            <h1 className="text-3xl sm:text-4xl font-bold mb-2">My Workouts</h1>
+            <p className="text-muted-foreground text-base sm:text-lg">
               Create, track and manage your fitness routines
             </p>
           </div>
           <Button
-            className="bg-foreground text-background hover:bg-foreground/90"
+            className="bg-foreground text-background hover:bg-foreground/90 w-full sm:w-auto"
             asChild
-            size="xl"
+            size="lg"
           >
             <Link href="/workouts/create">
               <Plus className="w-5 h-5 mr-2" />
@@ -224,7 +224,7 @@ export default function Workouts() {
         </div>
 
         {/* Search and Filter */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-8">
+        <div className="flex flex-col sm:flex-row gap-4 mb-6 sm:mb-8">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
             <Input
@@ -241,7 +241,7 @@ export default function Workouts() {
         </div>
 
         {/* My Workouts Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {filteredWorkouts.length > 0 ? (
             filteredWorkouts.map((workout) => (
               <WorkoutCard key={workout.id} workout={workout} />

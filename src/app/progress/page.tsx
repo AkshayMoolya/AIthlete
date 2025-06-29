@@ -133,14 +133,16 @@ export default function ProgressPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-16 md:pb-0">
       <Header variant="dashboard" />
 
-      <div className="container mx-auto px-6 py-8">
+      <div className="container mx-auto px-4 py-6 sm:px-6 sm:py-8">
         {/* Header Section */}
-        <div className="mb-12">
-          <h1 className="text-4xl font-bold mb-3">Your Progress</h1>
-          <p className="text-muted-foreground text-lg">
+        <div className="mb-8 sm:mb-12">
+          <h1 className="text-3xl sm:text-4xl font-bold mb-2 sm:mb-3">
+            Your Progress
+          </h1>
+          <p className="text-muted-foreground text-base sm:text-lg">
             Track your fitness journey and achievements
           </p>
         </div>
@@ -148,17 +150,17 @@ export default function ProgressPage() {
         {progressData && (
           <>
             {/* Key Metrics */}
-            <div className="grid md:grid-cols-4 gap-6 mb-8">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
               <Card className="border-0 bg-card">
-                <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 bg-muted rounded-xl flex items-center justify-center mx-auto mb-4">
-                    <Trophy className="w-6 h-6" />
+                <CardContent className="p-4 sm:p-6 text-center">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-muted rounded-xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                    <Trophy className="w-5 h-5 sm:w-6 sm:h-6" />
                   </div>
-                  <div className="text-2xl font-bold mb-1">
+                  <div className="text-xl sm:text-2xl font-bold mb-1">
                     {progressData.metrics.workoutsCompleted}
                   </div>
-                  <div className="text-sm text-muted-foreground">
-                    Workouts Completed
+                  <div className="text-xs sm:text-sm text-muted-foreground">
+                    Workouts
                   </div>
                   <div className="text-xs text-green-600 mt-1">
                     +{progressData.metrics.weeklyChange} this week
@@ -167,14 +169,14 @@ export default function ProgressPage() {
               </Card>
 
               <Card className="border-0 bg-card">
-                <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 bg-muted rounded-xl flex items-center justify-center mx-auto mb-4">
-                    <TrendingUp className="w-6 h-6" />
+                <CardContent className="p-4 sm:p-6 text-center">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-muted rounded-xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                    <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6" />
                   </div>
-                  <div className="text-2xl font-bold mb-1">
+                  <div className="text-xl sm:text-2xl font-bold mb-1">
                     +{progressData.metrics.strengthIncrease}%
                   </div>
-                  <div className="text-sm text-muted-foreground">
+                  <div className="text-xs sm:text-sm text-muted-foreground">
                     Strength Increase
                   </div>
                   <div className="text-xs text-green-600 mt-1">This month</div>
@@ -182,14 +184,14 @@ export default function ProgressPage() {
               </Card>
 
               <Card className="border-0 bg-card">
-                <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 bg-muted rounded-xl flex items-center justify-center mx-auto mb-4">
-                    <Activity className="w-6 h-6" />
+                <CardContent className="p-4 sm:p-6 text-center">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-muted rounded-xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                    <Activity className="w-5 h-5 sm:w-6 sm:h-6" />
                   </div>
-                  <div className="text-2xl font-bold mb-1">
+                  <div className="text-xl sm:text-2xl font-bold mb-1">
                     {progressData.metrics.streak}
                   </div>
-                  <div className="text-sm text-muted-foreground">
+                  <div className="text-xs sm:text-sm text-muted-foreground">
                     Day Streak
                   </div>
                   <div className="text-xs text-green-600 mt-1">
@@ -199,14 +201,14 @@ export default function ProgressPage() {
               </Card>
 
               <Card className="border-0 bg-card">
-                <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 bg-muted rounded-xl flex items-center justify-center mx-auto mb-4">
-                    <Clock className="w-6 h-6" />
+                <CardContent className="p-4 sm:p-6 text-center">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-muted rounded-xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                    <Clock className="w-5 h-5 sm:w-6 sm:h-6" />
                   </div>
-                  <div className="text-2xl font-bold mb-1">
+                  <div className="text-xl sm:text-2xl font-bold mb-1">
                     {progressData.metrics.trainingTime}h
                   </div>
-                  <div className="text-sm text-muted-foreground">
+                  <div className="text-xs sm:text-sm text-muted-foreground">
                     Training Time
                   </div>
                   <div className="text-xs text-green-600 mt-1">This month</div>
@@ -215,7 +217,7 @@ export default function ProgressPage() {
             </div>
 
             <Tabs defaultValue="overview" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-3">
+              <TabsList className="grid w-full grid-cols-3 mb-4">
                 <TabsTrigger value="overview">Overview</TabsTrigger>
                 <TabsTrigger value="strength">Strength</TabsTrigger>
                 <TabsTrigger value="goals">Goals</TabsTrigger>
@@ -343,8 +345,47 @@ export default function ProgressPage() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid md:grid-cols-7 gap-4">
-                      {progressData.weekSummary.map((day, index) => (
+                    {/* Mobile view - horizontal scrollable content */}
+                    <div className="flex overflow-x-auto pb-3 sm:hidden space-x-3">
+                      {progressData.weekSummary.map((day) => (
+                        <div
+                          key={day.day}
+                          className="text-center flex-shrink-0 w-16"
+                        >
+                          <div className="text-sm font-medium text-muted-foreground mb-2">
+                            {day.day}
+                          </div>
+                          <div
+                            className={`w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-2 ${
+                              day.status === "completed"
+                                ? "bg-foreground"
+                                : day.status === "today"
+                                ? "bg-muted"
+                                : "bg-muted"
+                            }`}
+                          >
+                            {day.status === "completed" ? (
+                              <Trophy className="w-4 h-4 text-background" />
+                            ) : day.status === "today" ? (
+                              <Clock className="w-4 h-4" />
+                            ) : (
+                              <div className="w-2 h-2 bg-muted-foreground rounded-full" />
+                            )}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {day.status === "completed"
+                              ? "Done"
+                              : day.status === "today"
+                              ? "Today"
+                              : "Plan"}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Desktop view - grid layout */}
+                    <div className="hidden sm:grid sm:grid-cols-7 gap-4">
+                      {progressData.weekSummary.map((day) => (
                         <div key={day.day} className="text-center">
                           <div className="text-sm font-medium text-muted-foreground mb-2">
                             {day.day}
@@ -424,7 +465,8 @@ export default function ProgressPage() {
                               No strength progression data available
                             </p>
                             <p className="text-sm text-muted-foreground mt-2">
-                              Complete more workouts with increasing weights to see your progress
+                              Complete more workouts with increasing weights to
+                              see your progress
                             </p>
                           </div>
                         )}

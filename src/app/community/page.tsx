@@ -54,9 +54,9 @@ export default function Community() {
       <CardHeader className="pb-4">
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <CardTitle className="text-lg mb-3 flex items-center space-x-2">
-              <span>{workout.name}</span>
-              <Globe className="w-4 h-4 text-green-600" />
+            <CardTitle className="text-base sm:text-lg mb-2 sm:mb-3 flex items-center space-x-2">
+              <span className="truncate">{workout.name}</span>
+              <Globe className="w-4 h-4 text-green-600 flex-shrink-0" />
             </CardTitle>
             <div className="flex items-center space-x-2 mb-3">
               {workout.tags.map((tag) => (

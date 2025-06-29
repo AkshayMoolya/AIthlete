@@ -4,6 +4,13 @@ import { db } from "@/lib/db";
 
 export async function GET(request: NextRequest) {
   try {
+    const session = await auth();
+
+    // Require authentication to access exercises data
+    if (!session?.user?.id) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
     const { searchParams } = new URL(request.url);
     const category = searchParams.get("category");
     const search = searchParams.get("search");
