@@ -9,6 +9,9 @@ import {
   Trophy,
   Activity,
   TrendingUp,
+  CheckCircle2,
+  Dumbbell,
+  ChevronRight,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,6 +20,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Header } from "@/components/layout/header";
+import { format } from "date-fns";
 
 import Link from "next/link";
 
@@ -80,6 +84,11 @@ interface UserProgressData {
   };
   currentGoals: GoalData[];
   completedGoals: CompletedGoalData[];
+  recentWorkouts: {
+    id: string;
+    name: string;
+    date: string;
+  }[];
 }
 
 export default function ProgressPage() {
@@ -416,6 +425,62 @@ export default function ProgressPage() {
                           </div>
                         </div>
                       ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Completed Workouts - New Section */}
+                <Card className="border-0 bg-card mt-6">
+                  <CardHeader>
+                    <CardTitle className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <CheckCircle2 className="w-5 h-5" />
+                        <span>Recent Completed Workouts</span>
+                      </div>
+                      <Button variant="ghost" size="sm" asChild>
+                        <Link href="/workout-sessions">View All Sessions</Link>
+                      </Button>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {progressData.recentWorkouts &&
+                      progressData.recentWorkouts.length > 0 ? (
+                        progressData.recentWorkouts.map((workout, index) => (
+                          <Link
+                            href={`/workout-sessions/${workout.id}`}
+                            key={workout.id}
+                            className="flex items-center justify-between p-3 bg-muted/50 rounded-lg hover:bg-muted/70 transition-colors"
+                          >
+                            <div className="flex items-center space-x-3">
+                              <div className="w-8 h-8 bg-foreground rounded-full flex items-center justify-center">
+                                <Dumbbell className="w-4 h-4 text-background" />
+                              </div>
+                              <div>
+                                <div className="font-medium text-sm">
+                                  {workout.name}
+                                </div>
+                                <div className="text-xs text-muted-foreground">
+                                  {format(
+                                    new Date(workout.date),
+                                    "MMM d, yyyy"
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                            <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                          </Link>
+                        ))
+                      ) : (
+                        <div className="text-center py-4">
+                          <p className="text-muted-foreground">
+                            No completed workouts yet
+                          </p>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            Complete a workout to see it here
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>

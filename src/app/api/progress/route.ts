@@ -429,6 +429,53 @@ export async function GET(request: NextRequest) {
     const recentCompletedGoals =
       completedGoals.length > 0 ? completedGoals : [];
 
+    // Get recent completed workouts
+    const recentCompletedWorkouts = await db.workoutSession.findMany({
+      where: {
+        userId,
+        completed: true,
+      },
+      include: {
+        workout: {
+          select: {
+            name: true,
+          },
+        },
+      },
+      orderBy: { endTime: "desc" },
+      take: 5,
+    });
+
+    // Map to a simplified format for the UI
+    const recentWorkouts = recentCompletedWorkouts.map((session) => ({
+      id: session.id,
+      name: session.workout.name,
+      date: session.endTime || session.startTime,
+    }));
+
+    // Add exercise frequency analysis
+    const exerciseFrequency = {};
+    allExerciseLogs.forEach((log) => {
+      const exerciseName = log.exercise?.name || "Unknown";
+      exerciseFrequency[exerciseName] =
+        (exerciseFrequency[exerciseName] || 0) + 1;
+    });
+
+    const mostFrequentExercises = Object.entries(exerciseFrequency)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([name, count]) => ({ name, count }));
+
+    // Add muscle group analysis
+    const muscleGroupWork = {};
+    allExerciseLogs.forEach((log) => {
+      if (log.exercise?.muscleGroups) {
+        log.exercise.muscleGroups.forEach((muscle) => {
+          muscleGroupWork[muscle] = (muscleGroupWork[muscle] || 0) + 1;
+        });
+      }
+    });
+
     // Generate response object
     const progressData = {
       metrics: {
@@ -494,6 +541,13 @@ export async function GET(request: NextRequest) {
       },
       currentGoals,
       completedGoals: recentCompletedGoals,
+      recentWorkouts,
+      exerciseAnalytics: {
+        mostFrequentExercises,
+        muscleGroupDistribution: Object.entries(muscleGroupWork).map(
+          ([muscle, count]) => ({ muscle, count })
+        ),
+      },
     };
 
     return NextResponse.json(progressData);

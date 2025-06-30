@@ -95,13 +95,13 @@ export default function EditWorkout({ params }: EditWorkoutProps) {
 
   const addExercise = (exercise: Exercise) => {
     const newWorkoutExercise: WorkoutExercise = {
-      id: `temp-${Date.now()}`, // Will be replaced by server
+      id: `temp-${Date.now()}`,
       workoutId,
       exerciseId: exercise.id,
       exercise,
       order: workoutExercises.length + 1,
       sets: 3,
-      reps: [10],
+      reps: 10, // Single value, not an array
       restTime: 60,
       autoIncrease: false,
       increaseAfterSessions: 1,
@@ -383,11 +383,13 @@ export default function EditWorkout({ params }: EditWorkoutProps) {
                               <Label className="text-xs">Reps</Label>
                               <Input
                                 type="number"
-                                value={workoutExercise.reps?.[0] ?? ""}
+                                value={workoutExercise.reps ?? ""} // Changed from accessing array
                                 onChange={(e) =>
-                                  updateExercise(index, "reps", [
-                                    parseInt(e.target.value) || 0,
-                                  ])
+                                  updateExercise(
+                                    index,
+                                    "reps",
+                                    parseInt(e.target.value) || 0
+                                  )
                                 }
                                 min="1"
                               />

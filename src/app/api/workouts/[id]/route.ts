@@ -1,15 +1,19 @@
-import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { NextRequest, NextResponse } from "next/server";
+
+interface RouteParams {
+  id: string;
+}
 
 // Get a specific workout
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<RouteParams> } // Note the Promise type
 ) {
   try {
     const session = await auth();
-    const id = params.id;
+    const { id } = await params; // Await the params
 
     const workout = await db.workout.findUnique({
       where: { id },
@@ -56,7 +60,7 @@ export async function GET(
 // Update a workout
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<RouteParams> } // Note the Promise type
 ) {
   try {
     const session = await auth();
@@ -64,7 +68,7 @@ export async function PUT(
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const id = params.id;
+    const { id } = await params; // Await the params
     const { name, description, isPublic, estimatedDuration, tags, exercises } =
       await request.json();
 
@@ -105,7 +109,7 @@ export async function PUT(
               exerciseId: ex.exerciseId,
               order: index + 1,
               sets: ex.sets,
-              reps: Array.isArray(ex.reps) ? ex.reps : [ex.reps], // Ensure reps is always an array
+              reps: ex.reps, // Now handling as a single value
               weight: ex.weight,
               restTime: ex.restTime,
               notes: ex.notes,
@@ -113,13 +117,6 @@ export async function PUT(
               increaseAmount: ex.increaseAmount,
               increaseAfterSessions: ex.increaseAfterSessions || 1,
             })) || [],
-        },
-      },
-      include: {
-        exercises: {
-          include: {
-            exercise: true,
-          },
         },
       },
     });
@@ -137,7 +134,7 @@ export async function PUT(
 // Delete a workout
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<RouteParams> } // Note the Promise type
 ) {
   try {
     const session = await auth();
@@ -145,7 +142,7 @@ export async function DELETE(
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const id = params.id;
+    const { id } = await params; // Await the params
 
     // First verify the workout belongs to the user
     const workout = await db.workout.findUnique({

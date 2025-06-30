@@ -32,7 +32,7 @@ interface WorkoutExercise {
   exerciseId: string;
   exercise: Exercise;
   sets: number;
-  reps: number[]; // Changed from number to number[]
+  reps: number; // Changed from number[] to number
   weight?: number;
   restTime?: number;
   notes?: string;
@@ -85,7 +85,7 @@ export default function CreateWorkout() {
       exerciseId: exercise.id,
       exercise,
       sets: 3,
-      reps: [10], // Changed from 10 to [10]
+      reps: 10, // Single value, not an array
       restTime: 60,
     };
     setWorkoutExercises([...workoutExercises, newWorkoutExercise]);
@@ -336,12 +336,12 @@ export default function CreateWorkout() {
                               <Label className="text-xs">Reps</Label>
                               <Input
                                 type="number"
-                                value={workoutExercise.reps[0] || ""} // Access first element of the array
+                                value={workoutExercise.reps || ""} // Changed from accessing array element
                                 onChange={(e) =>
                                   updateExercise(
                                     index,
                                     "reps",
-                                    [parseInt(e.target.value) || 0] // Wrap in array
+                                    parseInt(e.target.value) || 0
                                   )
                                 }
                                 min="1"

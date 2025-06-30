@@ -28,13 +28,21 @@ export interface WorkoutExercise {
   exercise: Exercise;
   order: number;
   sets: number;
-  reps?: number[];
+  reps: number; // Single value for all sets
   weight?: number;
   restTime?: number;
   notes?: string;
   autoIncrease: boolean;
   increaseAmount?: number;
   increaseAfterSessions: number;
+}
+
+// Add new interfaces for advanced rep schemes
+export interface AdvancedRepScheme {
+  workoutExerciseId: string;
+  setNumber: number;
+  reps: number;
+  weight?: number;
 }
 
 export interface Workout {

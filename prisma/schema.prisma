@@ -142,7 +142,7 @@ model WorkoutExercise {
   // Exercise configuration
   order    Int
   sets     Int
-  reps     Int[] // Changed from Int[]? to Int[]
+  reps     Int // Changed from Int[] to Int
   weight   Float?
   restTime Int? // in seconds
   notes    String?

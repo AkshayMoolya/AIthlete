@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { toast } from "sonner";
 
 const categories = [
   "Chest",
@@ -49,10 +50,38 @@ export default function CreateExercise() {
   const [instructions, setInstructions] = useState("");
   const [targetMuscles, setTargetMuscles] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [formErrors, setFormErrors] = useState<{
+    name?: string;
+    category?: string;
+    equipment?: string;
+  }>({});
+
+  const validateForm = () => {
+    const errors: {
+      name?: string;
+      category?: string;
+      equipment?: string;
+    } = {};
+
+    if (!name.trim()) {
+      errors.name = "Exercise name is required";
+    }
+
+    if (!category) {
+      errors.category = "Category is required";
+    }
+
+    if (!equipment) {
+      errors.equipment = "Equipment type is required";
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
   const handleSave = async () => {
-    if (!name.trim() || !category || !equipment) {
-      alert("Please fill in all required fields");
+    if (!validateForm()) {
+      toast.error("Please fill in all required fields");
       return;
     }
 
@@ -78,23 +107,25 @@ export default function CreateExercise() {
       });
 
       if (response.ok) {
+        toast.success("Exercise created successfully");
         router.push("/exercises");
       } else {
-        alert("Failed to create exercise");
+        const errorData = await response.json();
+        toast.error(errorData.message || "Failed to create exercise");
       }
     } catch (error) {
       console.error("Error creating exercise:", error);
-      alert("An error occurred while creating the exercise");
+      toast.error("An error occurred while creating the exercise");
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-16 md:pb-0">
       {/* Header */}
       <header className="border-b bg-background/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
+        <div className="container mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
           <Button variant="ghost" size="sm" asChild>
             <Link href="/exercises">
               <ArrowLeft className="w-4 h-4 mr-2" />
@@ -103,17 +134,22 @@ export default function CreateExercise() {
           </Button>
           <div className="flex items-center space-x-3">
             <ThemeToggle />
-            <Button onClick={handleSave} disabled={isLoading}>
+            <Button onClick={handleSave} disabled={isLoading} size="sm">
               <Save className="w-4 h-4 mr-2" />
-              {isLoading ? "Saving..." : "Save Exercise"}
+              <span className="sm:inline hidden">
+                {isLoading ? "Saving..." : "Save Exercise"}
+              </span>
+              <span className="sm:hidden">{isLoading ? "..." : "Save"}</span>
             </Button>
           </div>
         </div>
       </header>
 
-      <div className="container mx-auto px-6 py-8">
+      <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <div className="max-w-2xl mx-auto">
-          <h1 className="text-4xl font-bold mb-8">Create New Exercise</h1>
+          <h1 className="text-3xl sm:text-4xl font-bold mb-6 sm:mb-8">
+            Create New Exercise
+          </h1>
 
           <Card>
             <CardHeader>
@@ -122,13 +158,26 @@ export default function CreateExercise() {
             <CardContent className="space-y-6">
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="name">Exercise Name *</Label>
+                  <Label htmlFor="name" className="flex items-center">
+                    Exercise Name <span className="text-red-500 ml-1">*</span>
+                  </Label>
                   <Input
                     id="name"
                     value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    onChange={(e) => {
+                      setName(e.target.value);
+                      if (formErrors.name) {
+                        setFormErrors({ ...formErrors, name: undefined });
+                      }
+                    }}
                     placeholder="e.g., Barbell Bench Press"
+                    className={formErrors.name ? "border-red-500" : ""}
                   />
+                  {formErrors.name && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {formErrors.name}
+                    </p>
+                  )}
                 </div>
 
                 <div>
@@ -141,11 +190,23 @@ export default function CreateExercise() {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="category">Category *</Label>
-                    <Select value={category} onValueChange={setCategory}>
-                      <SelectTrigger>
+                    <Label htmlFor="category" className="flex items-center">
+                      Category <span className="text-red-500 ml-1">*</span>
+                    </Label>
+                    <Select
+                      value={category}
+                      onValueChange={(value) => {
+                        setCategory(value);
+                        if (formErrors.category) {
+                          setFormErrors({ ...formErrors, category: undefined });
+                        }
+                      }}
+                    >
+                      <SelectTrigger
+                        className={formErrors.category ? "border-red-500" : ""}
+                      >
                         <SelectValue placeholder="Select category" />
                       </SelectTrigger>
                       <SelectContent>
@@ -156,12 +217,32 @@ export default function CreateExercise() {
                         ))}
                       </SelectContent>
                     </Select>
+                    {formErrors.category && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {formErrors.category}
+                      </p>
+                    )}
                   </div>
 
                   <div>
-                    <Label htmlFor="equipment">Equipment *</Label>
-                    <Select value={equipment} onValueChange={setEquipment}>
-                      <SelectTrigger>
+                    <Label htmlFor="equipment" className="flex items-center">
+                      Equipment <span className="text-red-500 ml-1">*</span>
+                    </Label>
+                    <Select
+                      value={equipment}
+                      onValueChange={(value) => {
+                        setEquipment(value);
+                        if (formErrors.equipment) {
+                          setFormErrors({
+                            ...formErrors,
+                            equipment: undefined,
+                          });
+                        }
+                      }}
+                    >
+                      <SelectTrigger
+                        className={formErrors.equipment ? "border-red-500" : ""}
+                      >
                         <SelectValue placeholder="Select equipment" />
                       </SelectTrigger>
                       <SelectContent>
@@ -172,6 +253,11 @@ export default function CreateExercise() {
                         ))}
                       </SelectContent>
                     </Select>
+                    {formErrors.equipment && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {formErrors.equipment}
+                      </p>
+                    )}
                   </div>
                 </div>
 

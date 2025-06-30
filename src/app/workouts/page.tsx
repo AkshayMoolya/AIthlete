@@ -31,6 +31,8 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -50,6 +52,10 @@ export default function Workouts() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [deleteWorkoutId, setDeleteWorkoutId] = useState<string | null>(null);
+  const [filterOptions, setFilterOptions] = useState({
+    category: "all",
+    sort: "newest",
+  });
 
   useEffect(() => {
     fetchWorkouts();
@@ -175,6 +181,9 @@ export default function Workouts() {
                 Start Workout
               </Link>
             </Button>
+            <Button variant="outline" className="flex-1" asChild>
+              <Link href={`/workouts/${workout.id}`}>View Details</Link>
+            </Button>
             <Button variant="outline" size="icon" asChild>
               <Link href={`/workouts/${workout.id}`}>
                 <Calendar className="w-4 h-4" />
@@ -234,10 +243,54 @@ export default function Workouts() {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <Button variant="outline" className="flex items-center space-x-2">
-            <Filter className="w-4 h-4" />
-            <span>Filter</span>
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="flex items-center space-x-2">
+                <Filter className="w-4 h-4" />
+                <span>Filter</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuLabel>Sort By</DropdownMenuLabel>
+              <DropdownMenuItem
+                onClick={() =>
+                  setFilterOptions({ ...filterOptions, sort: "newest" })
+                }
+              >
+                Newest First
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() =>
+                  setFilterOptions({ ...filterOptions, sort: "oldest" })
+                }
+              >
+                Oldest First
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel>Categories</DropdownMenuLabel>
+              <DropdownMenuItem
+                onClick={() =>
+                  setFilterOptions({ ...filterOptions, category: "all" })
+                }
+              >
+                All
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() =>
+                  setFilterOptions({ ...filterOptions, category: "strength" })
+                }
+              >
+                Strength
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() =>
+                  setFilterOptions({ ...filterOptions, category: "cardio" })
+                }
+              >
+                Cardio
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         {/* My Workouts Grid */}

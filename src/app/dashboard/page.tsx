@@ -187,46 +187,55 @@ export default function Dashboard() {
                     <Dumbbell className="w-6 h-6" />
                     <span className="text-2xl">Recent Workouts</span>
                   </div>
-                  <Button variant="ghost" size="sm" asChild>
-                    <Link href="/workouts">View All</Link>
-                  </Button>
+                  <div className="flex items-center space-x-2">
+                    <Button variant="ghost" size="sm" asChild>
+                      <Link href="/workout-sessions">View Sessions</Link>
+                    </Button>
+                    <Button variant="ghost" size="sm" asChild>
+                      <Link href="/workouts">View All</Link>
+                    </Button>
+                  </div>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {dashboardData?.recentWorkouts &&
                 dashboardData.recentWorkouts.length > 0 ? (
                   dashboardData.recentWorkouts.map((workout) => (
-                    <div
+                    <Link
                       key={workout.id}
-                      className="p-4 border border-border rounded-xl hover:bg-muted/50 transition-colors cursor-pointer"
+                      href={`/workout-sessions/${workout.id}`}
                     >
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-semibold">{workout.name}</h4>
-                        <Badge variant="secondary">Completed</Badge>
-                      </div>
-                      <div className="flex items-center space-x-6 text-sm text-muted-foreground">
-                        <span className="flex items-center space-x-2">
-                          <Calendar className="w-4 h-4" />
-                          <span>
-                            {new Date(workout.completedAt).toLocaleDateString()}
-                          </span>
-                        </span>
-                        <span className="flex items-center space-x-2">
-                          <Clock className="w-4 h-4" />
-                          <span>{workout.duration} min</span>
-                        </span>
-                        <span className="flex items-center space-x-2">
-                          <Target className="w-4 h-4" />
-                          <span>{workout.exerciseCount} exercises</span>
-                        </span>
-                        {workout.calories && (
+                      <div className="p-4 border border-border rounded-xl hover:bg-muted/50 transition-colors cursor-pointer">
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="font-semibold">{workout.name}</h4>
+                          <Badge variant="secondary">Completed</Badge>
+                        </div>
+                        <div className="flex items-center space-x-6 text-sm text-muted-foreground">
                           <span className="flex items-center space-x-2">
-                            <Flame className="w-4 h-4" />
-                            <span>{workout.calories} cal</span>
+                            <Calendar className="w-4 h-4" />
+                            <span>
+                              {new Date(
+                                workout.completedAt
+                              ).toLocaleDateString()}
+                            </span>
                           </span>
-                        )}
+                          <span className="flex items-center space-x-2">
+                            <Clock className="w-4 h-4" />
+                            <span>{workout.duration} min</span>
+                          </span>
+                          <span className="flex items-center space-x-2">
+                            <Target className="w-4 h-4" />
+                            <span>{workout.exerciseCount} exercises</span>
+                          </span>
+                          {workout.calories && (
+                            <span className="flex items-center space-x-2">
+                              <Flame className="w-4 h-4" />
+                              <span>{workout.calories} cal</span>
+                            </span>
+                          )}
+                        </div>
                       </div>
-                    </div>
+                    </Link>
                   ))
                 ) : (
                   <p className="text-center text-muted-foreground py-8">

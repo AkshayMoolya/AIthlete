@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
               exerciseId: ex.exerciseId,
               order: index + 1,
               sets: ex.sets,
-              reps: Array.isArray(ex.reps) ? ex.reps : [ex.reps], // Ensure reps is always an array
+              reps: ex.reps, // Changed from array handling to single value
               weight: ex.weight,
               restTime: ex.restTime,
               notes: ex.notes,
@@ -80,15 +80,7 @@ export async function POST(request: NextRequest) {
             })) || [],
         },
       },
-      include: {
-        exercises: {
-          include: {
-            exercise: true,
-          },
-        },
-      },
     });
-
     return NextResponse.json(workout, { status: 201 });
   } catch (error) {
     console.error("Error creating workout:", error);
