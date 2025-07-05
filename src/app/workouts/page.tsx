@@ -109,12 +109,12 @@ export default function Workouts() {
         <CardHeader className="pb-4">
           <div className="flex items-start justify-between">
             <div className="flex-1 min-w-0">
-              <CardTitle className="text-base sm:text-lg mb-2 sm:mb-3 flex items-center space-x-2 pr-4">
+              <CardTitle className="text-lg sm:text-xl mb-2 sm:mb-3 flex items-center space-x-2 pr-4">
                 <span className="truncate">{workout.name}</span>
                 {workout.isPublic ? (
-                  <Globe className="w-4 h-4 text-green-600 flex-shrink-0" />
+                  <Globe className="w-5 h-5 text-green-600 flex-shrink-0" />
                 ) : (
-                  <Lock className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                  <Lock className="w-5 h-5 text-muted-foreground flex-shrink-0" />
                 )}
               </CardTitle>
               <div className="flex items-center flex-wrap gap-2 mb-3">
@@ -207,16 +207,16 @@ export default function Workouts() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-20 md:pb-0">
       {/* Replace custom header with reusable Header component */}
       <Header variant="dashboard" />
 
-      <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
+      <div className="container mx-auto px-4 py-6 max-w-6xl">
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 sm:mb-12">
           <div>
-            <h1 className="text-3xl sm:text-4xl font-bold mb-2">My Workouts</h1>
-            <p className="text-muted-foreground text-base sm:text-lg">
+            <h1 className="text-4xl sm:text-5xl font-bold mb-2">My Workouts</h1>
+            <p className="text-muted-foreground text-base sm:text-lg md:text-xl">
               Create, track and manage your fitness routines
             </p>
           </div>
@@ -294,7 +294,7 @@ export default function Workouts() {
         </div>
 
         {/* My Workouts Grid */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {filteredWorkouts.length > 0 ? (
             filteredWorkouts.map((workout) => (
               <WorkoutCard key={workout.id} workout={workout} />

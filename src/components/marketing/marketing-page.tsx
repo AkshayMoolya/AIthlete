@@ -28,35 +28,35 @@ export function MarketingPage() {
         <Container>
           <div className="text-center">
             <div className="max-w-3xl mx-auto">
-              <h1 className="text-5xl md:text-6xl font-bold mb-6 text-foreground leading-tight">
+              <h1 className="text-6xl md:text-7xl font-bold mb-6 text-foreground leading-tight">
                 Simple Fitness
                 <br />
                 <span className="text-muted-foreground">Tracking</span>
               </h1>
 
-              <p className="text-xl text-muted-foreground mb-12 max-w-2xl mx-auto leading-relaxed">
+              <p className="text-xl md:text-2xl text-muted-foreground mb-12 max-w-2xl mx-auto leading-relaxed">
                 Track your workouts, monitor progress, and stay motivated with
                 our clean and simple fitness tracking app.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
-                <Button size="lg" className="h-12 px-8" asChild>
+                <Button size="lg" className="h-14 px-10 text-lg" asChild>
                   <Link
                     href="/dashboard"
                     className="flex items-center space-x-2"
                   >
                     <span>Start Tracking</span>
-                    <ArrowRight className="w-4 h-4" />
+                    <ArrowRight className="w-5 h-5" />
                   </Link>
                 </Button>
                 <Button
                   size="lg"
                   variant="outline"
-                  className="h-12 px-8"
+                  className="h-14 px-10 text-lg"
                   asChild
                 >
                   <Link href="#demo" className="flex items-center space-x-2">
-                    <Play className="w-4 h-4" />
+                    <Play className="w-5 h-5" />
                     <span>View Demo</span>
                   </Link>
                 </Button>
@@ -64,11 +64,11 @@ export function MarketingPage() {
 
               <div className="relative max-w-4xl mx-auto">
                 <Image
-                  src="/placeholder.svg?height=500&width=900"
+                  src="/next.svg"
                   alt="AIthlete App Dashboard"
                   width={900}
                   height={500}
-                  className="rounded-2xl shadow-2xl border border-border/50"
+                  className="rounded-2xl shadow-2xl border border-border/50 dark:invert"
                 />
               </div>
             </div>
@@ -80,11 +80,11 @@ export function MarketingPage() {
       <Section id="features" background="muted">
         <Container>
           <div className="text-center mb-20">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">
+            <h2 className="text-5xl md:text-6xl font-bold mb-6">
               Everything you need to
               <span className="text-muted-foreground"> stay fit</span>
             </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto">
               Simple tools to track your fitness journey without the complexity.
             </p>
           </div>
@@ -129,7 +129,7 @@ export function MarketingPage() {
         <Container>
           <Card className="border-0 bg-foreground text-background overflow-hidden">
             <CardContent className="p-12 text-center">
-              <h2 className="text-4xl md:text-5xl font-bold mb-6">
+              <h2 className="text-5xl md:text-6xl font-bold mb-6">
                 Ready to Start Your Journey?
               </h2>
               <p className="text-xl mb-8 max-w-2xl mx-auto opacity-90 leading-relaxed">

@@ -140,12 +140,13 @@ model WorkoutExercise {
   exercise   Exercise @relation(fields: [exerciseId], references: [id])
 
   // Exercise configuration
-  order    Int
-  sets     Int
-  reps     Int // Changed from Int[] to Int
-  weight   Float?
-  restTime Int? // in seconds
-  notes    String?
+  order      Int
+  sets       Int
+  reps       Int // Changed from Int[] to Int
+  weight     Float?
+  weightUnit String? @default("kg") // "kg" or "lbs"
+  restTime   Int? // in seconds
+  notes      String?
 
   // Auto-progression settings
   autoIncrease          Boolean @default(false)

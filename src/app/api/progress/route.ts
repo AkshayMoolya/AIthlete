@@ -16,7 +16,7 @@ interface ExerciseLogWithSession {
   reps: number[];
   weight: number[];
   restTime?: number[];
-  notes?: string | null; // Modified to accept null values
+  notes?: string | null;
   session: {
     startTime: Date;
   };
@@ -33,20 +33,58 @@ interface StrengthProgression {
   progress: number;
 }
 
-// New interfaces for goals data
-interface DbGoal {
-  id: string;
-  userId: string;
-  name: string;
-  targetValue: number;
-  currentValue: number;
+interface Achievement {
   type: string;
-  status: "active" | "completed" | "abandoned";
-  deadline?: Date | null;
-  startDate: Date;
-  completedDate?: Date | null;
-  createdAt: Date;
-  updatedAt: Date;
+  description: string;
+  status: string;
+  icon: string;
+  earnedDate?: string;
+}
+
+interface VolumeData {
+  name: string;
+  volume: number;
+  sessions: number;
+}
+
+// Enhanced interfaces for better data representation
+interface ProgressMetrics {
+  workoutConsistency: {
+    value: number;
+    explanation: string;
+    target: number;
+  };
+  strengthProgression: {
+    value: number;
+    explanation: string;
+    exerciseCount: number;
+  };
+  goalAchievement: {
+    value: number;
+    explanation: string;
+    activeGoalsCount: number;
+  };
+}
+
+interface PerformanceMetrics {
+  totalVolume: {
+    value: number;
+    status: string;
+    explanation: string;
+    previousMonth: number;
+  };
+  trainingFrequency: {
+    value: number;
+    status: string;
+    explanation: string;
+    target: number;
+  };
+  progressiveOverload: {
+    value: number;
+    status: string;
+    explanation: string;
+    sessionCount: number;
+  };
 }
 
 export async function GET(request: NextRequest) {
@@ -60,9 +98,16 @@ export async function GET(request: NextRequest) {
 
     // Get workout sessions with optimized includes
     const workoutSessions = await db.workoutSession.findMany({
-      where: { userId },
+      where: {
+        userId,
+        completed: true, // Only count completed sessions
+      },
       include: {
-        workout: true,
+        workout: {
+          select: {
+            name: true,
+          },
+        },
         exerciseLogs: {
           include: {
             exercise: {
@@ -70,7 +115,6 @@ export async function GET(request: NextRequest) {
                 id: true,
                 name: true,
                 category: true,
-                equipment: true,
               },
             },
           },
@@ -79,21 +123,108 @@ export async function GET(request: NextRequest) {
       orderBy: { startTime: "desc" },
     });
 
-    if (!workoutSessions) {
-      return NextResponse.json(
-        { message: "No workout data found" },
-        { status: 404 }
-      );
+    // Get user goals with detailed information
+    const userGoals = await db.goal.findMany({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+    });
+
+    // Calculate date ranges
+    const now = new Date();
+    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+
+    // Check if user has any data
+    if (workoutSessions.length === 0) {
+      return NextResponse.json({
+        metrics: {
+          workoutsCompleted: 0,
+          weeklyChange: 0,
+          strengthIncrease: 0,
+          streak: 0,
+          trainingTime: 0,
+        },
+        progressMetrics: {
+          workoutConsistency: {
+            value: 0,
+            explanation:
+              "Complete workouts regularly to build consistency. Aim for 3 workouts per week to start.",
+            target:
+              userGoals.find(
+                (g) =>
+                  g.type === "consistency" &&
+                  (g.name.toLowerCase().includes("week") ||
+                    g.name.toLowerCase().includes("weekly"))
+              )?.targetValue || 3,
+          },
+          strengthProgression: {
+            value: 0,
+            explanation:
+              "Track strength gains by logging progressive overload in your workouts.",
+            exerciseCount: 0,
+          },
+          goalAchievement: {
+            value: 0,
+            explanation:
+              userGoals.length === 0
+                ? "Create fitness goals to track your progress and stay motivated."
+                : "Work towards your active goals to improve this metric.",
+            activeGoalsCount: userGoals.filter((g) => g.status === "active")
+              .length,
+          },
+        },
+        achievements: [],
+        weekSummary: generateWeekSummary([]),
+        strengthProgression: [],
+        performanceMetrics: {
+          totalVolume: {
+            value: 0,
+            status: "Getting Started",
+            explanation:
+              "Total weight lifted = sets × reps × weight across all exercises",
+            previousMonth: 0,
+          },
+          trainingFrequency: {
+            value: 0,
+            status: "Getting Started",
+            explanation: `Start with ${
+              userGoals.find(
+                (g) =>
+                  g.type === "consistency" &&
+                  (g.name.toLowerCase().includes("week") ||
+                    g.name.toLowerCase().includes("weekly"))
+              )?.targetValue || 3
+            } workouts per week.`,
+            target:
+              userGoals.find(
+                (g) =>
+                  g.type === "consistency" &&
+                  (g.name.toLowerCase().includes("week") ||
+                    g.name.toLowerCase().includes("weekly"))
+              )?.targetValue || 3,
+          },
+          progressiveOverload: {
+            value: 0,
+            status: "Getting Started",
+            explanation:
+              "Percentage of workouts where you increased weight, reps, or sets.",
+            sessionCount: 0,
+          },
+        },
+        currentGoals: processActiveGoals(userGoals),
+        completedGoals: processCompletedGoals(userGoals),
+        recentWorkouts: [],
+        volumeData: generateVolumeData([]),
+      });
     }
 
     // Basic metrics
     const workoutsCompleted = workoutSessions.length;
 
-    // Weekly change calculation (this week vs last week)
-    const now = new Date();
-    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
-
+    // Weekly change calculation
     const thisWeekSessions = workoutSessions.filter(
       (s) => new Date(s.startTime) >= oneWeekAgo
     );
@@ -102,65 +233,25 @@ export async function GET(request: NextRequest) {
         new Date(s.startTime) >= twoWeeksAgo &&
         new Date(s.startTime) < oneWeekAgo
     );
-
     const weeklyChange = thisWeekSessions.length - lastWeekSessions.length;
 
-    // Streak calculation
-    let currentStreak = 0;
-    const today = new Date().toISOString().split("T")[0];
-
-    // Get unique workout dates and sort them
-    const workoutDates = [
-      ...new Set(
-        workoutSessions.map(
-          (s) => new Date(s.startTime).toISOString().split("T")[0]
-        )
-      ),
-    ]
-      .sort()
-      .reverse(); // Sort in descending order (newest first)
-
-    // Calculate current streak
-    if (workoutDates.length > 0) {
-      const hasWorkoutToday = workoutDates[0] === today;
-      currentStreak = hasWorkoutToday ? 1 : 0;
-
-      for (let i = hasWorkoutToday ? 1 : 0; i < workoutDates.length; i++) {
-        const currentDate = new Date(workoutDates[i]);
-        const prevDate = new Date(workoutDates[i - 1]);
-
-        // Check if consecutive days
-        const dayDiff = Math.round(
-          (prevDate.getTime() - currentDate.getTime()) / (1000 * 60 * 60 * 24)
-        );
-        if (dayDiff === 1) {
-          currentStreak++;
-        } else {
-          break;
-        }
-      }
-    }
-
-    // Monthly training time (hours)
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    // Monthly sessions
     const monthSessions = workoutSessions.filter(
       (s) => new Date(s.startTime) >= startOfMonth
     );
+    const lastMonthSessions = workoutSessions.filter(
+      (s) =>
+        new Date(s.startTime) >= startOfLastMonth &&
+        new Date(s.startTime) <= endOfLastMonth
+    );
 
-    let trainingTimeMinutes = 0;
-    monthSessions.forEach((session) => {
-      if (session.startTime && session.endTime) {
-        const duration =
-          (new Date(session.endTime).getTime() -
-            new Date(session.startTime).getTime()) /
-          (1000 * 60);
-        trainingTimeMinutes += duration;
-      }
-    });
+    // Calculate streak
+    const currentStreak = calculateWorkoutStreak(workoutSessions);
 
-    const trainingTime = Math.round(trainingTimeMinutes / 60); // Convert to hours
+    // Calculate training time
+    const trainingTime = calculateTrainingTime(monthSessions);
 
-    // Collect all exercise logs with their related exercise data
+    // Collect all exercise logs
     const allExerciseLogs: ExerciseLogWithSession[] = [];
     workoutSessions.forEach((session) => {
       session.exerciseLogs.forEach((log) => {
@@ -173,381 +264,161 @@ export async function GET(request: NextRequest) {
       });
     });
 
-    // Group logs by exercise
-    const exerciseMap: Record<string, ExerciseLogWithSession[]> = {};
-    allExerciseLogs.forEach((log) => {
-      if (!exerciseMap[log.exerciseId]) {
-        exerciseMap[log.exerciseId] = [];
-      }
-      exerciseMap[log.exerciseId].push(log);
-    });
-
     // Calculate strength progression
-    const strengthProgressions: StrengthProgression[] = [];
-    let totalStrengthIncrease = 0;
-    let progressionCount = 0;
-
-    for (const exerciseId of Object.keys(exerciseMap)) {
-      const logs = exerciseMap[exerciseId].sort(
-        (a, b) =>
-          new Date(a.session.startTime).getTime() -
-          new Date(b.session.startTime).getTime()
-      );
-
-      if (logs.length >= 2) {
-        const firstLog = logs[0];
-        const lastLog = logs[logs.length - 1];
-
-        // Get max weight
-        const firstWeight =
-          firstLog.weight && firstLog.weight.length > 0
-            ? Math.max(...firstLog.weight)
-            : 0;
-        const lastWeight =
-          lastLog.weight && lastLog.weight.length > 0
-            ? Math.max(...lastLog.weight)
-            : 0;
-
-        if (firstWeight > 0 && lastWeight > firstWeight) {
-          const increase = lastWeight - firstWeight;
-          const percentage = Math.round((increase / firstWeight) * 100);
-          totalStrengthIncrease += percentage;
-          progressionCount++;
-
-          const exerciseName = logs[0].exercise?.name || "Unknown Exercise";
-
-          strengthProgressions.push({
-            exercise: exerciseName,
-            previous: firstWeight,
-            current: lastWeight,
-            increase,
-            percentage,
-            progress: Math.min(percentage, 100),
-          });
-        }
-      }
-    }
-
-    // Sort by highest improvement percentage
-    strengthProgressions.sort((a, b) => b.percentage - a.percentage);
-
-    const strengthIncrease =
-      progressionCount > 0
-        ? Math.round(totalStrengthIncrease / progressionCount)
+    const strengthProgression = calculateStrengthProgression(allExerciseLogs);
+    const avgStrengthIncrease =
+      strengthProgression.length > 0
+        ? Math.round(
+            strengthProgression.reduce((sum, sp) => sum + sp.percentage, 0) /
+              strengthProgression.length
+          )
         : 0;
 
-    // Weekly summary
-    const weekDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-    const currentDay = now.getDay() || 7; // Convert Sunday (0) to 7 for easier calculation
-    const weekSummary = [];
-
-    for (let i = 0; i < 7; i++) {
-      const date = new Date(now);
-      date.setDate(now.getDate() - currentDay + i + 1); // Start from Monday of current week
-      const dateStr = date.toISOString().split("T")[0];
-
-      const hasWorkout = workoutDates.includes(dateStr);
-      const isToday = dateStr === today;
-
-      weekSummary.push({
-        day: weekDays[i],
-        status: isToday ? "today" : hasWorkout ? "completed" : "planned",
-      });
-    }
-
-    // Fetch goals from database
-    const userGoals = await db.goal.findMany({
-      where: {
-        userId,
+    // Calculate enhanced progress metrics with explanations
+    const progressMetrics: ProgressMetrics = {
+      workoutConsistency: {
+        value: calculateWorkoutConsistency(thisWeekSessions.length, userGoals),
+        explanation: `Based on ${thisWeekSessions.length} workouts this week. Consistency is key to fitness success.`,
+        target:
+          userGoals.find(
+            (g) =>
+              g.type === "consistency" &&
+              (g.name.toLowerCase().includes("week") ||
+                g.name.toLowerCase().includes("weekly"))
+          )?.targetValue || 3,
       },
-      orderBy: {
-        createdAt: "desc",
+      strengthProgression: {
+        value: Math.min(avgStrengthIncrease, 100),
+        explanation:
+          strengthProgression.length > 0
+            ? `Average strength increase across ${strengthProgression.length} exercises with tracked progress.`
+            : "Complete workouts with progressive overload to track strength gains.",
+        exerciseCount: strengthProgression.length,
       },
-    });
+      goalAchievement: {
+        value: calculateGoalAchievement(userGoals),
+        explanation:
+          userGoals.length === 0
+            ? "Set specific fitness goals to track your progress more effectively."
+            : `Progress across ${
+                userGoals.filter((g) => g.status === "active").length
+              } active goals.`,
+        activeGoalsCount: userGoals.filter((g) => g.status === "active").length,
+      },
+    };
 
-    // Progress metrics
-    const workoutConsistency = Math.min(
-      Math.round((thisWeekSessions.length / 7) * 100),
-      100
+    // Generate achievements based on actual data
+    const achievements = generateAchievements(
+      strengthProgression,
+      currentStreak,
+      monthSessions.length,
+      userGoals
     );
-    const strengthProgressionMetric = Math.min(strengthIncrease, 100);
 
-    let goalAchievement = 0;
-    const workoutGoals = userGoals.filter(
-      (goal) =>
-        goal.status === "active" &&
-        (goal.type === "consistency" || goal.type.includes("workout"))
+    // Calculate volume data
+    const volumeData = generateVolumeData(workoutSessions);
+    const volumeChange = calculateVolumeChange(
+      monthSessions,
+      lastMonthSessions
     );
+    const lastMonthVolume = calculateVolumeForSessions(lastMonthSessions);
 
-    if (workoutGoals.length > 0) {
-      // Calculate average progress across all workout-related goals
-      const totalProgress = workoutGoals.reduce((sum, goal) => {
-        return (
-          sum +
-          Math.min(
-            Math.round((goal.currentValue / goal.targetValue) * 100),
-            100
-          )
-        );
-      }, 0);
-      goalAchievement = Math.round(totalProgress / workoutGoals.length);
-    } else {
-      // Fallback calculation based on actual monthly workout frequency
-      // Get the user's average workouts per month from historical data
-      const monthsWithData = Math.max(
-        1,
-        Math.ceil(
-          (now.getTime() -
-            workoutSessions[workoutSessions.length - 1]?.startTime.getTime() ||
-            0) /
-            (30 * 24 * 60 * 60 * 1000)
-        )
-      );
-      const averageMonthlyTarget =
-        Math.round(workoutSessions.length / monthsWithData) || 4;
-      const targetWorkoutsPerMonth = Math.max(4, averageMonthlyTarget);
-      goalAchievement = Math.min(
-        Math.round((monthSessions.length / targetWorkoutsPerMonth) * 100),
-        100
-      );
+    // Enhanced performance metrics with intelligent handling of missing data
+    const weeklyFrequencyTarget =
+      userGoals.find(
+        (g) =>
+          g.type === "consistency" &&
+          (g.name.toLowerCase().includes("week") ||
+            g.name.toLowerCase().includes("weekly"))
+      )?.targetValue || 3;
+
+    // Calculate volume more intelligently
+    const thisMonthVolume = calculateVolumeForSessions(monthSessions);
+
+    // Only calculate volume change if there's meaningful data
+    let volumeChangeValue = 0;
+    let volumeStatus = "Getting Started";
+    let volumeExplanation =
+      "Complete workouts with tracked weights to see volume progress.";
+
+    if (thisMonthVolume > 0 && lastMonthVolume > 0) {
+      volumeChangeValue = volumeChange;
+      volumeStatus = getVolumeStatus(volumeChange);
+      volumeExplanation = `${
+        volumeChange >= 0 ? "Increased" : "Decreased"
+      } by ${Math.abs(
+        volumeChange
+      )}% from last month. Volume = total weight lifted.`;
+    } else if (thisMonthVolume > 0 && lastMonthVolume === 0) {
+      volumeChangeValue = 100; // First month with data
+      volumeStatus = "New Start";
+      volumeExplanation = `Started tracking this month! Total volume: ${Math.round(
+        thisMonthVolume
+      )} lbs lifted.`;
+    } else if (monthSessions.length > 0) {
+      volumeStatus = "Tracking Started";
+      volumeExplanation =
+        "Complete workouts with weight tracking to calculate volume progress.";
     }
 
-    // Process active goals
-    const activeGoals = userGoals
-      .filter((goal) => goal.status === "active")
-      .map((goal) => {
-        const progress = Math.min(
-          Math.round((goal.currentValue / goal.targetValue) * 100),
-          100
-        );
-
-        let daysLeft, totalDays;
-        if (goal.deadline) {
-          const now = new Date();
-          const start = new Date(goal.startDate);
-          const end = new Date(goal.deadline);
-
-          daysLeft = Math.max(
-            0,
-            Math.ceil((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
-          );
-          totalDays = Math.ceil(
-            (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)
-          );
-        }
-
-        return {
-          name: goal.name,
-          status: goal.type === "consistency" ? "Active" : "In Progress",
-          progress,
-          current: `Current: ${goal.currentValue}${
-            goal.type === "weight" ? " lbs" : ""
-          }`,
-          target: `${progress}% Complete`,
-          ...(daysLeft !== undefined && { daysLeft }),
-          ...(totalDays !== undefined && { totalDays }),
-        };
-      });
-
-    // Process completed goals
-    const completedGoals = userGoals
-      .filter((goal) => goal.status === "completed")
-      .map((goal) => {
-        let completedDate = "recently";
-
-        if (goal.completedDate) {
-          const now = new Date();
-          const completed = new Date(goal.completedDate);
-          const diffDays = Math.floor(
-            (now.getTime() - completed.getTime()) / (1000 * 60 * 60 * 24)
-          );
-
-          if (diffDays === 0) {
-            completedDate = "today";
-          } else if (diffDays === 1) {
-            completedDate = "yesterday";
-          } else if (diffDays < 7) {
-            completedDate = `${diffDays} days ago`;
-          } else if (diffDays < 30) {
-            completedDate = "last month";
-          }
-        }
-
-        return {
-          name: goal.name,
-          completedDate,
-        };
-      });
-
-    // Calculate goal achievement based on actual user goals, not hardcoded values
-    let goalAchievementFallback = 0;
-    const workoutGoalsFallback = userGoals.filter(
-      (goal) =>
-        goal.status === "active" &&
-        (goal.type === "consistency" || goal.type.includes("workout"))
-    );
-
-    if (workoutGoalsFallback.length > 0) {
-      // Calculate average progress across all workout-related goals
-      const totalProgress = workoutGoalsFallback.reduce((sum, goal) => {
-        return (
-          sum +
-          Math.min(
-            Math.round((goal.currentValue / goal.targetValue) * 100),
-            100
-          )
-        );
-      }, 0);
-      goalAchievementFallback = Math.round(
-        totalProgress / workoutGoalsFallback.length
-      );
-    } else {
-      // Fallback calculation based on actual monthly workout frequency
-      // Get the user's average workouts per month from historical data
-      const monthsWithData = Math.max(
-        1,
-        Math.ceil(
-          (now.getTime() -
-            workoutSessions[workoutSessions.length - 1]?.startTime.getTime() ||
-            0) /
-            (30 * 24 * 60 * 60 * 1000)
-        )
-      );
-      const averageMonthlyTarget =
-        Math.round(workoutSessions.length / monthsWithData) || 4;
-      const targetWorkoutsPerMonth = Math.max(4, averageMonthlyTarget);
-      goalAchievementFallback = Math.min(
-        Math.round((monthSessions.length / targetWorkoutsPerMonth) * 100),
-        100
-      );
-    }
-
-    // Use actual user goals if available, otherwise generate personalized defaults
-    const currentGoals = activeGoals.length > 0 ? activeGoals : [];
-
-    // Only use completed goals from database, don't generate defaults
-    const recentCompletedGoals =
-      completedGoals.length > 0 ? completedGoals : [];
+    const performanceMetrics: PerformanceMetrics = {
+      totalVolume: {
+        value: volumeChangeValue,
+        status: volumeStatus,
+        explanation: volumeExplanation,
+        previousMonth: lastMonthVolume,
+      },
+      trainingFrequency: {
+        value: parseFloat(thisWeekSessions.length.toFixed(1)),
+        status: getFrequencyStatus(
+          thisWeekSessions.length,
+          weeklyFrequencyTarget
+        ),
+        explanation: `${thisWeekSessions.length} workouts this week. ${
+          weeklyFrequencyTarget > 3
+            ? `Your goal is ${weeklyFrequencyTarget} sessions per week.`
+            : "Optimal frequency is 3-4 sessions per week."
+        }`,
+        target: weeklyFrequencyTarget,
+      },
+      progressiveOverload: {
+        value: avgStrengthIncrease,
+        status: getProgressiveOverloadStatus(avgStrengthIncrease),
+        explanation:
+          avgStrengthIncrease > 0
+            ? `${avgStrengthIncrease}% average increase in strength across tracked exercises.`
+            : monthSessions.length > 0
+            ? "Focus on gradually increasing weight, reps, or sets in your workouts."
+            : "Complete workouts with progressive overload to track strength gains.",
+        sessionCount: monthSessions.length,
+      },
+    };
 
     // Get recent completed workouts
-    const recentCompletedWorkouts = await db.workoutSession.findMany({
-      where: {
-        userId,
-        completed: true,
-      },
-      include: {
-        workout: {
-          select: {
-            name: true,
-          },
-        },
-      },
-      orderBy: { endTime: "desc" },
-      take: 5,
-    });
-
-    // Map to a simplified format for the UI
-    const recentWorkouts = recentCompletedWorkouts.map((session) => ({
+    const recentWorkouts = workoutSessions.slice(0, 5).map((session) => ({
       id: session.id,
       name: session.workout.name,
       date: session.endTime || session.startTime,
     }));
 
-    // Add exercise frequency analysis
-    const exerciseFrequency = {};
-    allExerciseLogs.forEach((log) => {
-      const exerciseName = log.exercise?.name || "Unknown";
-      exerciseFrequency[exerciseName] =
-        (exerciseFrequency[exerciseName] || 0) + 1;
-    });
-
-    const mostFrequentExercises = Object.entries(exerciseFrequency)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 5)
-      .map(([name, count]) => ({ name, count }));
-
-    // Add muscle group analysis
-    const muscleGroupWork = {};
-    allExerciseLogs.forEach((log) => {
-      if (log.exercise?.muscleGroups) {
-        log.exercise.muscleGroups.forEach((muscle) => {
-          muscleGroupWork[muscle] = (muscleGroupWork[muscle] || 0) + 1;
-        });
-      }
-    });
-
-    // Generate response object
+    // Generate response with enhanced data
     const progressData = {
       metrics: {
         workoutsCompleted,
         weeklyChange,
-        strengthIncrease,
+        strengthIncrease: avgStrengthIncrease,
         streak: currentStreak,
         trainingTime,
       },
-      progressMetrics: {
-        workoutConsistency,
-        strengthProgression: strengthProgressionMetric,
-        goalAchievement,
-        overallProgress: Math.round(
-          (workoutConsistency + strengthProgressionMetric + goalAchievement) / 3
-        ),
-      },
-      achievements: [
-        {
-          type: "Personal Record",
-          description:
-            strengthProgressions.length > 0
-              ? `${strengthProgressions[0].exercise}: ${strengthProgressions[0].current} lbs`
-              : "No records yet",
-          status: "New",
-          icon: "trophy",
-        },
-        {
-          type: "Consistency Streak",
-          description: `${currentStreak} days workout streak`,
-          status: "Active",
-          icon: "target",
-        },
-        {
-          type: "Monthly Goal",
-          description: `${monthSessions.length} workouts completed`,
-          status:
-            userGoals.length > 0 ? "Based on your goals" : "Set custom goals",
-          icon: "activity",
-        },
-      ],
-      weekSummary,
-      strengthProgression: strengthProgressions.slice(0, 4), // Top 4 only
-      performanceMetrics: {
-        totalVolume: {
-          value: monthSessions.length,
-          status:
-            monthSessions.length >
-            (userGoals.length > 0
-              ? Math.max(...workoutGoals.map((g) => g.targetValue)) / 2
-              : 12)
-              ? "Excellent"
-              : "Good",
-        },
-        trainingFrequency: {
-          value: parseFloat((thisWeekSessions.length / 7).toFixed(1)),
-          status: thisWeekSessions.length >= 3 ? "Consistent" : "Moderate",
-        },
-        progressiveOverload: {
-          value: strengthIncrease,
-          status: strengthIncrease > 10 ? "On Track" : "Needs Focus",
-        },
-      },
-      currentGoals,
-      completedGoals: recentCompletedGoals,
+      progressMetrics,
+      achievements,
+      weekSummary: generateWeekSummary(workoutSessions),
+      strengthProgression: strengthProgression.slice(0, 6),
+      performanceMetrics,
+      currentGoals: processActiveGoals(userGoals),
+      completedGoals: processCompletedGoals(userGoals),
       recentWorkouts,
-      exerciseAnalytics: {
-        mostFrequentExercises,
-        muscleGroupDistribution: Object.entries(muscleGroupWork).map(
-          ([muscle, count]) => ({ muscle, count })
-        ),
-      },
+      volumeData,
     };
 
     return NextResponse.json(progressData);
@@ -558,4 +429,376 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+// Helper functions
+function calculateWorkoutStreak(sessions: any[]): number {
+  if (sessions.length === 0) return 0;
+
+  const today = new Date();
+  const workoutDates = [
+    ...new Set(
+      sessions.map((s) => new Date(s.startTime).toISOString().split("T")[0])
+    ),
+  ]
+    .sort()
+    .reverse();
+
+  let streak = 0;
+  let currentDate = new Date(today);
+
+  for (const workoutDate of workoutDates) {
+    const workoutDateObj = new Date(workoutDate);
+    const daysDiff = Math.floor(
+      (currentDate.getTime() - workoutDateObj.getTime()) / (1000 * 60 * 60 * 24)
+    );
+
+    if (daysDiff <= 1) {
+      streak++;
+      currentDate = workoutDateObj;
+    } else if (daysDiff > 1) {
+      break;
+    }
+  }
+
+  return streak;
+}
+
+function calculateTrainingTime(sessions: any[]): number {
+  let totalMinutes = 0;
+  sessions.forEach((session) => {
+    if (session.startTime && session.endTime) {
+      const duration =
+        (new Date(session.endTime).getTime() -
+          new Date(session.startTime).getTime()) /
+        (1000 * 60);
+      totalMinutes += duration;
+    }
+  });
+  return Math.round(totalMinutes / 60);
+}
+
+function calculateStrengthProgression(
+  logs: ExerciseLogWithSession[]
+): StrengthProgression[] {
+  const exerciseMap: Record<string, ExerciseLogWithSession[]> = {};
+
+  logs.forEach((log) => {
+    if (!exerciseMap[log.exerciseId]) {
+      exerciseMap[log.exerciseId] = [];
+    }
+    exerciseMap[log.exerciseId].push(log);
+  });
+
+  const progressions: StrengthProgression[] = [];
+
+  Object.entries(exerciseMap).forEach(([exerciseId, exerciseLogs]) => {
+    if (exerciseLogs.length >= 2) {
+      const sortedLogs = exerciseLogs.sort(
+        (a, b) =>
+          new Date(a.session.startTime).getTime() -
+          new Date(b.session.startTime).getTime()
+      );
+
+      const firstLog = sortedLogs[0];
+      const lastLog = sortedLogs[sortedLogs.length - 1];
+
+      const firstWeight =
+        firstLog.weight.length > 0 ? Math.max(...firstLog.weight) : 0;
+      const lastWeight =
+        lastLog.weight.length > 0 ? Math.max(...lastLog.weight) : 0;
+
+      if (firstWeight > 0 && lastWeight > firstWeight) {
+        const increase = lastWeight - firstWeight;
+        const percentage = Math.round((increase / firstWeight) * 100);
+
+        progressions.push({
+          exercise: firstLog.exercise?.name || "Unknown Exercise",
+          previous: firstWeight,
+          current: lastWeight,
+          increase,
+          percentage,
+          progress: Math.min(percentage, 100),
+        });
+      }
+    }
+  });
+
+  return progressions.sort((a, b) => b.percentage - a.percentage);
+}
+
+function calculateWorkoutConsistency(
+  thisWeekSessions: number,
+  userGoals: any[] = []
+): number {
+  // Look for user-defined weekly consistency goals first
+  const consistencyGoals = userGoals.filter(
+    (goal) => goal.type === "consistency"
+  );
+
+  const weeklyConsistencyGoal = consistencyGoals.find((goal) => {
+    const name = goal.name.toLowerCase();
+    return (
+      name.includes("week") ||
+      name.includes("weekly") ||
+      (name.includes("workout") && name.includes("per week"))
+    );
+  });
+
+  // Use user's goal target or default to 3 workouts per week (more realistic than 4)
+  const targetWeeklyWorkouts = weeklyConsistencyGoal?.targetValue || 3;
+
+  return Math.min(
+    Math.round((thisWeekSessions / targetWeeklyWorkouts) * 100),
+    100
+  );
+}
+
+function calculateGoalAchievement(goals: any[]): number {
+  const activeGoals = goals.filter((goal) => goal.status === "active");
+
+  if (activeGoals.length === 0) {
+    return 0; // No goals set = 0% achievement
+  }
+
+  const totalProgress = activeGoals.reduce((sum, goal) => {
+    const progress = Math.min(
+      (goal.currentValue / goal.targetValue) * 100,
+      100
+    );
+    return sum + progress;
+  }, 0);
+
+  return Math.round(totalProgress / activeGoals.length);
+}
+
+function generateAchievements(
+  strengthProgression: StrengthProgression[],
+  streak: number,
+  monthlyWorkouts: number,
+  goals: any[]
+): Achievement[] {
+  const achievements: Achievement[] = [];
+
+  // Strength achievement
+  if (strengthProgression.length > 0) {
+    const bestProgression = strengthProgression[0];
+    achievements.push({
+      type: "Strength PR",
+      description: `${bestProgression.exercise}: +${bestProgression.increase} lbs`,
+      status: "Recent",
+      icon: "trophy",
+    });
+  }
+
+  // Streak achievement
+  if (streak > 0) {
+    achievements.push({
+      type: "Consistency",
+      description: `${streak} day${streak > 1 ? "s" : ""} workout streak`,
+      status: streak >= 7 ? "Excellent" : "Good",
+      icon: "target",
+    });
+  }
+
+  // Monthly volume achievement
+  if (monthlyWorkouts > 0) {
+    achievements.push({
+      type: "Monthly Volume",
+      description: `${monthlyWorkouts} workouts completed this month`,
+      status:
+        monthlyWorkouts >= 12
+          ? "Excellent"
+          : monthlyWorkouts >= 8
+          ? "Good"
+          : "Getting Started",
+      icon: "activity",
+    });
+  }
+
+  // Goal achievement
+  const completedGoalsThisMonth = goals.filter(
+    (goal) =>
+      goal.status === "completed" &&
+      goal.completedDate &&
+      new Date(goal.completedDate) >=
+        new Date(new Date().getFullYear(), new Date().getMonth(), 1)
+  );
+
+  if (completedGoalsThisMonth.length > 0) {
+    achievements.push({
+      type: "Goal Achieved",
+      description: `Completed ${completedGoalsThisMonth.length} goal${
+        completedGoalsThisMonth.length > 1 ? "s" : ""
+      } this month`,
+      status: "Completed",
+      icon: "trophy",
+    });
+  }
+
+  return achievements;
+}
+
+function generateWeekSummary(sessions: any[]) {
+  const weekDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const now = new Date();
+  const currentDay = now.getDay() || 7;
+  const workoutDates = new Set(
+    sessions.map((s) => new Date(s.startTime).toISOString().split("T")[0])
+  );
+
+  const weekSummary = [];
+  for (let i = 0; i < 7; i++) {
+    const date = new Date(now);
+    date.setDate(now.getDate() - currentDay + i + 1);
+    const dateStr = date.toISOString().split("T")[0];
+    const today = now.toISOString().split("T")[0];
+
+    weekSummary.push({
+      day: weekDays[i],
+      status:
+        dateStr === today
+          ? "today"
+          : workoutDates.has(dateStr)
+          ? "completed"
+          : "planned",
+    });
+  }
+
+  return weekSummary;
+}
+
+function processActiveGoals(goals: any[]) {
+  return goals
+    .filter((goal) => goal.status === "active")
+    .map((goal) => {
+      const progress = Math.min(
+        Math.round((goal.currentValue / goal.targetValue) * 100),
+        100
+      );
+
+      return {
+        name: goal.name,
+        status: progress >= 100 ? "Ready to Complete" : "In Progress",
+        progress,
+        current: `${goal.currentValue}${goal.type === "weight" ? " lbs" : ""}`,
+        target: `Goal: ${goal.targetValue}${
+          goal.type === "weight" ? " lbs" : ""
+        }`,
+      };
+    });
+}
+
+function processCompletedGoals(goals: any[]) {
+  return goals
+    .filter((goal) => goal.status === "completed")
+    .map((goal) => {
+      const completedDate = goal.completedDate
+        ? formatRelativeDate(new Date(goal.completedDate))
+        : "recently";
+
+      return {
+        name: goal.name,
+        completedDate,
+      };
+    });
+}
+
+function formatRelativeDate(date: Date): string {
+  const now = new Date();
+  const diffDays = Math.floor(
+    (now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24)
+  );
+
+  if (diffDays === 0) return "today";
+  if (diffDays === 1) return "yesterday";
+  if (diffDays < 7) return `${diffDays} days ago`;
+  if (diffDays < 30) return "last month";
+  return "a while ago";
+}
+
+function generateVolumeData(sessions: any[]): VolumeData[] {
+  const last6Months = [];
+  const now = new Date();
+
+  for (let i = 5; i >= 0; i--) {
+    const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0);
+
+    const monthSessions = sessions.filter(
+      (s) =>
+        new Date(s.startTime) >= monthStart && new Date(s.startTime) <= monthEnd
+    );
+
+    const volume = calculateVolumeForSessions(monthSessions);
+
+    last6Months.push({
+      name: monthStart.toLocaleDateString("en-US", { month: "short" }),
+      volume,
+      sessions: monthSessions.length,
+    });
+  }
+
+  return last6Months;
+}
+
+function calculateVolumeForSessions(sessions: any[]): number {
+  return sessions.reduce((totalVolume, session) => {
+    return (
+      totalVolume +
+      session.exerciseLogs.reduce((sessionVolume: number, log: any) => {
+        const logVolume = log.reps.reduce(
+          (vol: number, rep: number, index: number) => {
+            return vol + rep * (log.weight[index] || 0);
+          },
+          0
+        );
+        return sessionVolume + logVolume;
+      }, 0)
+    );
+  }, 0);
+}
+
+function calculateVolumeChange(thisMonth: any[], lastMonth: any[]): number {
+  const thisMonthVolume = calculateVolumeForSessions(thisMonth);
+  const lastMonthVolume = calculateVolumeForSessions(lastMonth);
+
+  if (lastMonthVolume === 0) {
+    return thisMonthVolume > 0 ? 100 : 0;
+  }
+
+  return Math.round(
+    ((thisMonthVolume - lastMonthVolume) / lastMonthVolume) * 100
+  );
+}
+
+function getVolumeStatus(change: number): string {
+  if (change >= 20) return "Excellent Growth";
+  if (change >= 10) return "Strong Progress";
+  if (change >= 5) return "Good Progress";
+  if (change >= 0) return "Steady Progress";
+  if (change >= -5) return "Maintaining";
+  if (change >= -15) return "Slight Decline";
+  return "Needs Attention";
+}
+
+function getFrequencyStatus(sessions: number, target: number = 3): string {
+  const percentage = (sessions / target) * 100;
+
+  if (sessions === 0) return "Inactive";
+  if (percentage >= 120) return "Exceeding Goal";
+  if (percentage >= 100) return "Goal Achieved";
+  if (percentage >= 80) return "Nearly There";
+  if (percentage >= 50) return "Making Progress";
+  if (percentage >= 25) return "Getting Started";
+  return "Just Started";
+}
+
+function getProgressiveOverloadStatus(increase: number): string {
+  if (increase >= 25) return "Outstanding";
+  if (increase >= 15) return "Excellent";
+  if (increase >= 10) return "Very Good";
+  if (increase >= 5) return "Good Progress";
+  if (increase > 0) return "Some Progress";
+  return "Needs Focus";
 }

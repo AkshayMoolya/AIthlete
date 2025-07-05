@@ -93,27 +93,29 @@ export default function Exercises() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-20 md:pb-0">
       {/* Replace custom header with reusable Header component */}
       <Header variant="dashboard" />
 
-      <div className="container mx-auto px-6 py-8">
+      <div className="container mx-auto px-4 py-6 max-w-6xl">
         {/* Header Section */}
-        <div className="flex items-center justify-between mb-12">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 sm:mb-12">
           <div>
-            <h1 className="text-4xl font-bold mb-3">Exercises</h1>
-            <p className="text-muted-foreground text-lg">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-2 sm:mb-3">
+              Exercises
+            </h1>
+            <p className="text-muted-foreground text-base sm:text-lg md:text-xl">
               Track your exercise progress and personal records
             </p>
           </div>
-          <Button className="bg-foreground text-background hover:bg-foreground/90">
+          <Button className="bg-foreground text-background hover:bg-foreground/90 w-full sm:w-auto">
             <Plus className="w-4 h-4 mr-2" />
             Add Exercise
           </Button>
         </div>
 
         {/* Search and Filter */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-8">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6 sm:mb-8 xl:mb-10">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
             <Input
@@ -123,14 +125,17 @@ export default function Exercises() {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <Button variant="outline" className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            className="flex items-center justify-center space-x-2 w-full sm:w-auto"
+          >
             <Filter className="w-4 h-4" />
             <span>Filter</span>
           </Button>
         </div>
 
         {/* Exercise Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 xl:gap-6">
           {filteredExercises.length > 0 ? (
             filteredExercises.map((exercise) => (
               <Card
@@ -140,7 +145,7 @@ export default function Exercises() {
                 <CardHeader className="pb-4">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <CardTitle className="text-lg mb-2">
+                      <CardTitle className="text-xl mb-2">
                         {exercise.name}
                       </CardTitle>
                       <div className="flex items-center space-x-2 mb-3">
@@ -207,7 +212,7 @@ export default function Exercises() {
         <Card className="border-0 bg-card mt-12">
           <CardHeader>
             <CardTitle className="flex items-center space-x-3">
-              <Clock className="w-6 h-6" />
+              <Clock className="w-7 h-7" />
               <span className="text-2xl">Recent Activity</span>
             </CardTitle>
           </CardHeader>

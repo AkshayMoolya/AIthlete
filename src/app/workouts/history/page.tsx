@@ -45,14 +45,12 @@ interface WorkoutSession {
   exerciseCount: number;
   totalSets: number;
   totalReps: number;
-  calories?: number;
   notes?: string;
 }
 
 interface HistoryStats {
   totalWorkouts: number;
   totalTime: number; // in minutes
-  totalCalories: number;
   averageDuration: number;
   currentStreak: number;
   longestStreak: number;
@@ -179,7 +177,7 @@ export default function WorkoutHistory() {
 
         {/* Stats Overview */}
         {stats && (
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-8">
             <Card>
               <CardContent className="p-4 text-center">
                 <Trophy className="w-6 h-6 text-yellow-500 mx-auto mb-2" />
@@ -196,15 +194,6 @@ export default function WorkoutHistory() {
                   {formatDuration(stats.totalTime)}
                 </div>
                 <div className="text-xs text-muted-foreground">Total Time</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4 text-center">
-                <Flame className="w-6 h-6 text-red-500 mx-auto mb-2" />
-                <div className="text-2xl font-bold">{stats.totalCalories}</div>
-                <div className="text-xs text-muted-foreground">
-                  Calories Burned
-                </div>
               </CardContent>
             </Card>
             <Card>
@@ -294,7 +283,7 @@ export default function WorkoutHistory() {
                         </Badge>
                       </div>
 
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm text-muted-foreground">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm text-muted-foreground">
                         <div className="flex items-center space-x-2">
                           <Calendar className="w-4 h-4" />
                           <span>
@@ -309,12 +298,6 @@ export default function WorkoutHistory() {
                           <Target className="w-4 h-4" />
                           <span>{session.exerciseCount} exercises</span>
                         </div>
-                        {session.calories && (
-                          <div className="flex items-center space-x-2">
-                            <Flame className="w-4 h-4" />
-                            <span>{session.calories} cal</span>
-                          </div>
-                        )}
                       </div>
 
                       {session.workout.description && (

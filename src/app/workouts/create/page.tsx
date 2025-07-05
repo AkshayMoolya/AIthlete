@@ -20,6 +20,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { CreateExerciseDialog } from "@/components/workout/create-exercise-dialog";
 
 interface Exercise {
   id: string;
@@ -32,8 +33,9 @@ interface WorkoutExercise {
   exerciseId: string;
   exercise: Exercise;
   sets: number;
-  reps: number; // Changed from number[] to number
+  reps: number; // Already correct - single number
   weight?: number;
+  weightUnit?: string; // "kg" or "lbs"
   restTime?: number;
   notes?: string;
 }
@@ -51,6 +53,7 @@ export default function CreateWorkout() {
   );
   const [availableExercises, setAvailableExercises] = useState<Exercise[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All");
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -86,10 +89,29 @@ export default function CreateWorkout() {
       exercise,
       sets: 3,
       reps: 10, // Single value, not an array
+      weightUnit: "kg", // Default weight unit
       restTime: 60,
     };
     setWorkoutExercises([...workoutExercises, newWorkoutExercise]);
   };
+
+  const handleExerciseCreated = (newExercise: Exercise) => {
+    setAvailableExercises([...availableExercises, newExercise]);
+    addExercise(newExercise);
+  };
+
+  const exerciseCategories = [
+    "All",
+    "Chest",
+    "Back",
+    "Shoulders",
+    "Arms",
+    "Legs",
+    "Core",
+    "Cardio",
+    "Full Body",
+    "Flexibility",
+  ];
 
   const removeExercise = (index: number) => {
     setWorkoutExercises(workoutExercises.filter((_, i) => i !== index));
@@ -133,11 +155,20 @@ export default function CreateWorkout() {
           isPublic,
           tags,
           exercises: workoutExercises.map(
-            ({ exerciseId, sets, reps, weight, restTime, notes }) => ({
+            ({
               exerciseId,
               sets,
               reps,
               weight,
+              weightUnit,
+              restTime,
+              notes,
+            }) => ({
+              exerciseId,
+              sets,
+              reps,
+              weight,
+              weightUnit,
               restTime,
               notes,
             })
@@ -161,6 +192,7 @@ export default function CreateWorkout() {
   const filteredExercises = availableExercises.filter(
     (exercise) =>
       exercise.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+      (selectedCategory === "All" || exercise.category === selectedCategory) &&
       !workoutExercises.some((we) => we.exerciseId === exercise.id)
   );
 
@@ -316,7 +348,7 @@ export default function CreateWorkout() {
                             </Button>
                           </div>
 
-                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
                             <div>
                               <Label className="text-xs">Sets</Label>
                               <Input
@@ -348,7 +380,7 @@ export default function CreateWorkout() {
                               />
                             </div>
                             <div>
-                              <Label className="text-xs">Weight (kg)</Label>
+                              <Label className="text-xs">Weight</Label>
                               <Input
                                 type="number"
                                 value={workoutExercise.weight || ""}
@@ -361,6 +393,23 @@ export default function CreateWorkout() {
                                 }
                                 placeholder="20"
                               />
+                            </div>
+                            <div>
+                              <Label className="text-xs">Unit</Label>
+                              <Select
+                                value={workoutExercise.weightUnit || "kg"}
+                                onValueChange={(value) =>
+                                  updateExercise(index, "weightUnit", value)
+                                }
+                              >
+                                <SelectTrigger className="h-9">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="kg">kg</SelectItem>
+                                  <SelectItem value="lbs">lbs</SelectItem>
+                                </SelectContent>
+                              </Select>
                             </div>
                             <div>
                               <Label className="text-xs">Rest (sec)</Label>
@@ -400,13 +449,41 @@ export default function CreateWorkout() {
                       <CardTitle className="text-lg">Add Exercises</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="relative mb-4">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                        <Input
-                          placeholder="Search exercises..."
-                          className="pl-10"
-                          value={searchTerm}
-                          onChange={(e) => setSearchTerm(e.target.value)}
+                      <div className="space-y-4">
+                        {/* Category Filter */}
+                        <div className="flex flex-wrap gap-2">
+                          {exerciseCategories.map((category) => (
+                            <Button
+                              key={category}
+                              type="button"
+                              variant={
+                                selectedCategory === category
+                                  ? "default"
+                                  : "outline"
+                              }
+                              size="sm"
+                              onClick={() => setSelectedCategory(category)}
+                              className="text-xs"
+                            >
+                              {category}
+                            </Button>
+                          ))}
+                        </div>
+
+                        {/* Search */}
+                        <div className="relative">
+                          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                          <Input
+                            placeholder="Search exercises..."
+                            className="pl-10"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                          />
+                        </div>
+
+                        {/* Create Exercise Button */}
+                        <CreateExerciseDialog
+                          onExerciseCreated={handleExerciseCreated}
                         />
                       </div>
 
@@ -426,7 +503,14 @@ export default function CreateWorkout() {
                                   {exercise.category} • {exercise.equipment}
                                 </div>
                               </div>
-                              <Button size="sm" variant="ghost">
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  addExercise(exercise);
+                                }}
+                              >
                                 <Plus className="w-4 h-4 mr-1" /> Add
                               </Button>
                             </div>

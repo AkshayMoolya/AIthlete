@@ -28,8 +28,9 @@ export interface WorkoutExercise {
   exercise: Exercise;
   order: number;
   sets: number;
-  reps: number; // Single value for all sets
+  reps: number; // Changed from number[] to number to match schema
   weight?: number;
+  weightUnit?: string; // "kg" or "lbs"
   restTime?: number;
   notes?: string;
   autoIncrease: boolean;

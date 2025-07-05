@@ -70,7 +70,7 @@ export default function SignUp() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-6">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4 md:p-6 lg:p-8">
       <div className="w-full max-w-md">
         {/* Theme Toggle */}
         <div className="flex justify-end mb-6">
@@ -85,14 +85,14 @@ export default function SignUp() {
             </div>
             <span className="text-3xl font-bold text-foreground">AIthlete</span>
           </div>
-          <h1 className="text-2xl font-bold mb-2">Create Account</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-3xl font-bold mb-2">Create Account</h1>
+          <p className="text-muted-foreground text-lg">
             Join us to start your fitness journey
           </p>
         </div>
 
         <Card className="border-0 bg-card shadow-lg">
-          <CardContent className="p-8 space-y-6">
+          <CardContent className="p-6 sm:p-8 space-y-6">
             <form onSubmit={handleSignUp} className="space-y-4">
               {error && (
                 <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">

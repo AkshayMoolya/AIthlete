@@ -38,13 +38,13 @@ interface ExerciseCardProps {
     exerciseId: string;
     exercise: Exercise;
     sets: number;
-    reps: number;
+    reps: number; // Changed from number[] to number
     restTime?: number;
   };
   isCurrentExercise: boolean;
   isExpanded: boolean;
   completedSets: boolean[];
-  setValues: { reps: number[]; weight: number[] };
+  setValues: { reps: number[]; weight: number[] }; // Keep as arrays for dynamic editing
   workoutStarted: boolean;
   currentSetIndex: number;
   onToggleExpanded: () => void;

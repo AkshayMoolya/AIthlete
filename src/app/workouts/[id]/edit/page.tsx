@@ -316,7 +316,10 @@ export default function EditWorkout({ params }: EditWorkoutProps) {
                             {tag}
                             <X
                               className="w-3 h-3 ml-1.5"
-                              onClick={() => removeTag(tag)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                removeTag(tag);
+                              }}
                             />
                           </Badge>
                         ))}
@@ -473,7 +476,14 @@ export default function EditWorkout({ params }: EditWorkoutProps) {
                                   {exercise.category} • {exercise.equipment}
                                 </div>
                               </div>
-                              <Button size="sm" variant="ghost">
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  addExercise(exercise);
+                                }}
+                              >
                                 <Plus className="w-4 h-4 mr-1" /> Add
                               </Button>
                             </div>

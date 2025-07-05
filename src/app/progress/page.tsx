@@ -12,6 +12,7 @@ import {
   CheckCircle2,
   Dumbbell,
   ChevronRight,
+  Plus,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -69,18 +70,44 @@ interface UserProgressData {
     trainingTime: number;
   };
   progressMetrics: {
-    workoutConsistency: number;
-    strengthProgression: number;
-    goalAchievement: number;
-    overallProgress: number;
+    workoutConsistency: {
+      value: number;
+      explanation: string;
+      target: number;
+    };
+    strengthProgression: {
+      value: number;
+      explanation: string;
+      exerciseCount: number;
+    };
+    goalAchievement: {
+      value: number;
+      explanation: string;
+      activeGoalsCount: number;
+    };
   };
   achievements: AchievementData[];
   weekSummary: WeekdayData[];
   strengthProgression: StrengthData[];
   performanceMetrics: {
-    totalVolume: { value: number; status: string };
-    trainingFrequency: { value: number; status: string };
-    progressiveOverload: { value: number; status: string };
+    totalVolume: {
+      value: number;
+      status: string;
+      explanation: string;
+      previousMonth: number;
+    };
+    trainingFrequency: {
+      value: number;
+      status: string;
+      explanation: string;
+      target: number;
+    };
+    progressiveOverload: {
+      value: number;
+      status: string;
+      explanation: string;
+      sessionCount: number;
+    };
   };
   currentGoals: GoalData[];
   completedGoals: CompletedGoalData[];
@@ -88,6 +115,11 @@ interface UserProgressData {
     id: string;
     name: string;
     date: string;
+  }[];
+  volumeData: {
+    name: string;
+    volume: number;
+    sessions: number;
   }[];
 }
 
@@ -145,10 +177,10 @@ export default function ProgressPage() {
     <div className="min-h-screen bg-background pb-16 md:pb-0">
       <Header variant="dashboard" />
 
-      <div className="container mx-auto px-4 py-6 sm:px-6 sm:py-8">
+      <div className="container mx-auto px-4 py-6 max-w-6xl">
         {/* Header Section */}
-        <div className="mb-8 sm:mb-12">
-          <h1 className="text-3xl sm:text-4xl font-bold mb-2 sm:mb-3">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-4xl sm:text-5xl font-bold mb-2 sm:mb-3">
             Your Progress
           </h1>
           <p className="text-muted-foreground text-base sm:text-lg">
@@ -159,11 +191,11 @@ export default function ProgressPage() {
         {progressData && (
           <>
             {/* Key Metrics */}
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-5 sm:mb-6">
               <Card className="border-0 bg-card">
                 <CardContent className="p-4 sm:p-6 text-center">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-muted rounded-xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
-                    <Trophy className="w-5 h-5 sm:w-6 sm:h-6" />
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 bg-muted rounded-xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                    <Trophy className="w-6 h-6 sm:w-7 sm:h-7" />
                   </div>
                   <div className="text-xl sm:text-2xl font-bold mb-1">
                     {progressData.metrics.workoutsCompleted}
@@ -179,8 +211,8 @@ export default function ProgressPage() {
 
               <Card className="border-0 bg-card">
                 <CardContent className="p-4 sm:p-6 text-center">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-muted rounded-xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
-                    <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6" />
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 bg-muted rounded-xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                    <TrendingUp className="w-6 h-6 sm:w-7 sm:h-7" />
                   </div>
                   <div className="text-xl sm:text-2xl font-bold mb-1">
                     +{progressData.metrics.strengthIncrease}%
@@ -194,8 +226,8 @@ export default function ProgressPage() {
 
               <Card className="border-0 bg-card">
                 <CardContent className="p-4 sm:p-6 text-center">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-muted rounded-xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
-                    <Activity className="w-5 h-5 sm:w-6 sm:h-6" />
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 bg-muted rounded-xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                    <Activity className="w-6 h-6 sm:w-7 sm:h-7" />
                   </div>
                   <div className="text-xl sm:text-2xl font-bold mb-1">
                     {progressData.metrics.streak}
@@ -211,8 +243,8 @@ export default function ProgressPage() {
 
               <Card className="border-0 bg-card">
                 <CardContent className="p-4 sm:p-6 text-center">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-muted rounded-xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
-                    <Clock className="w-5 h-5 sm:w-6 sm:h-6" />
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 bg-muted rounded-xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                    <Clock className="w-6 h-6 sm:w-7 sm:h-7" />
                   </div>
                   <div className="text-xl sm:text-2xl font-bold mb-1">
                     {progressData.metrics.trainingTime}h
@@ -225,20 +257,20 @@ export default function ProgressPage() {
               </Card>
             </div>
 
-            <Tabs defaultValue="overview" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-3 mb-4">
+            <Tabs defaultValue="overview" className="space-y-4">
+              <TabsList className="grid w-full grid-cols-3 mb-4 rounded-lg">
                 <TabsTrigger value="overview">Overview</TabsTrigger>
                 <TabsTrigger value="strength">Strength</TabsTrigger>
                 <TabsTrigger value="goals">Goals</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="overview" className="space-y-6">
-                <div className="grid lg:grid-cols-2 gap-6">
+              <TabsContent value="overview" className="space-y-4">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 xl:gap-6">
                   {/* Progress Chart */}
                   <Card className="border-0 bg-card">
                     <CardHeader>
                       <CardTitle className="flex items-center space-x-2">
-                        <BarChart3 className="w-5 h-5" />
+                        <BarChart3 className="w-6 h-6" />
                         <span>Monthly Progress</span>
                       </CardTitle>
                     </CardHeader>
@@ -248,54 +280,74 @@ export default function ProgressPage() {
                           <div className="flex justify-between text-sm mb-2">
                             <span>Workout Consistency</span>
                             <span>
-                              {progressData.progressMetrics.workoutConsistency}%
+                              {
+                                progressData.progressMetrics.workoutConsistency
+                                  .value
+                              }
+                              %
                             </span>
                           </div>
                           <Progress
                             value={
                               progressData.progressMetrics.workoutConsistency
+                                .value
                             }
                             className="h-3"
                           />
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {
+                              progressData.progressMetrics.workoutConsistency
+                                .explanation
+                            }
+                          </p>
                         </div>
                         <div>
                           <div className="flex justify-between text-sm mb-2">
                             <span>Strength Progression</span>
                             <span>
-                              {progressData.progressMetrics.strengthProgression}
+                              {
+                                progressData.progressMetrics.strengthProgression
+                                  .value
+                              }
                               %
                             </span>
                           </div>
                           <Progress
                             value={
                               progressData.progressMetrics.strengthProgression
+                                .value
                             }
                             className="h-3"
                           />
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {
+                              progressData.progressMetrics.strengthProgression
+                                .explanation
+                            }
+                          </p>
                         </div>
                         <div>
                           <div className="flex justify-between text-sm mb-2">
                             <span>Goal Achievement</span>
-                            <span>
-                              {progressData.progressMetrics.goalAchievement}%
-                            </span>
+                            <Link
+                              href="/goals"
+                              className="text-sm text-primary hover:underline"
+                            >
+                              Manage Goals
+                            </Link>
                           </div>
                           <Progress
-                            value={progressData.progressMetrics.goalAchievement}
+                            value={
+                              progressData.progressMetrics.goalAchievement.value
+                            }
                             className="h-3"
                           />
-                        </div>
-                        <div>
-                          <div className="flex justify-between text-sm mb-2">
-                            <span>Overall Progress</span>
-                            <span>
-                              {progressData.progressMetrics.overallProgress}%
-                            </span>
-                          </div>
-                          <Progress
-                            value={progressData.progressMetrics.overallProgress}
-                            className="h-3"
-                          />
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {
+                              progressData.progressMetrics.goalAchievement
+                                .explanation
+                            }
+                          </p>
                         </div>
                       </div>
                     </CardContent>
@@ -318,13 +370,13 @@ export default function ProgressPage() {
                           >
                             <div className="w-8 h-8 bg-foreground rounded-full flex items-center justify-center">
                               {achievement.icon === "trophy" && (
-                                <Trophy className="w-4 h-4 text-background" />
+                                <Trophy className="w-5 h-5 text-background" />
                               )}
                               {achievement.icon === "target" && (
-                                <Target className="w-4 h-4 text-background" />
+                                <Target className="w-5 h-5 text-background" />
                               )}
                               {achievement.icon === "activity" && (
-                                <Activity className="w-4 h-4 text-background" />
+                                <Activity className="w-5 h-5 text-background" />
                               )}
                             </div>
                             <div className="flex-1">
@@ -349,7 +401,7 @@ export default function ProgressPage() {
                 <Card className="border-0 bg-card">
                   <CardHeader>
                     <CardTitle className="flex items-center space-x-2">
-                      <Calendar className="w-5 h-5" />
+                      <Calendar className="w-6 h-6" />
                       <span>This Week's Summary</span>
                     </CardTitle>
                   </CardHeader>
@@ -434,7 +486,7 @@ export default function ProgressPage() {
                   <CardHeader>
                     <CardTitle className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
-                        <CheckCircle2 className="w-5 h-5" />
+                        <CheckCircle2 className="w-6 h-6" />
                         <span>Recent Completed Workouts</span>
                       </div>
                       <Button variant="ghost" size="sm" asChild>
@@ -484,14 +536,17 @@ export default function ProgressPage() {
                     </div>
                   </CardContent>
                 </Card>
+
+                {/* Workout Volume Chart */}
+                {/* <VolumeChart data={progressData.volumeData} /> */}
               </TabsContent>
 
-              <TabsContent value="strength" className="space-y-6">
-                <div className="grid lg:grid-cols-2 gap-6">
+              <TabsContent value="strength" className="space-y-4">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 xl:gap-6">
                   <Card className="border-0 bg-card">
                     <CardHeader>
                       <CardTitle className="flex items-center space-x-2">
-                        <TrendingUp className="w-5 h-5" />
+                        <TrendingUp className="w-6 h-6" />
                         <span>Strength Progression</span>
                       </CardTitle>
                     </CardHeader>
@@ -542,37 +597,76 @@ export default function ProgressPage() {
                   <Card className="border-0 bg-card">
                     <CardHeader>
                       <CardTitle className="flex items-center space-x-2">
-                        <BarChart3 className="w-5 h-5" />
+                        <BarChart3 className="w-6 h-6" />
                         <span>Performance Metrics</span>
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4">
+                        {/* Total Volume */}
                         <div className="p-4 bg-muted/50 rounded-lg">
                           <div className="flex justify-between items-center mb-2">
                             <span className="font-medium">Total Volume</span>
-                            <Badge variant="secondary">
+                            <Badge
+                              variant={
+                                progressData.performanceMetrics.totalVolume
+                                  .status === "Getting Started"
+                                  ? "secondary"
+                                  : "default"
+                              }
+                            >
                               {
                                 progressData.performanceMetrics.totalVolume
                                   .status
                               }
                             </Badge>
                           </div>
-                          <div className="text-2xl font-bold">
-                            +{progressData.performanceMetrics.totalVolume.value}
-                            %
-                          </div>
-                          <div className="text-sm text-muted-foreground">
-                            vs last month
-                          </div>
+                          {progressData.performanceMetrics.totalVolume
+                            .status !== "Getting Started" ? (
+                            <>
+                              <div className="text-2xl font-bold">
+                                {progressData.performanceMetrics.totalVolume
+                                  .value >= 0
+                                  ? "+"
+                                  : ""}
+                                {
+                                  progressData.performanceMetrics.totalVolume
+                                    .value
+                                }
+                                %
+                              </div>
+                              <div className="text-sm text-muted-foreground mb-2">
+                                vs last month
+                              </div>
+                            </>
+                          ) : (
+                            <div className="text-lg font-semibold text-muted-foreground mb-2">
+                              No data yet
+                            </div>
+                          )}
+                          <p className="text-xs text-muted-foreground">
+                            {
+                              progressData.performanceMetrics.totalVolume
+                                .explanation
+                            }
+                          </p>
                         </div>
 
+                        {/* Training Frequency */}
                         <div className="p-4 bg-muted/50 rounded-lg">
                           <div className="flex justify-between items-center mb-2">
                             <span className="font-medium">
                               Training Frequency
                             </span>
-                            <Badge variant="secondary">
+                            <Badge
+                              variant={
+                                progressData.performanceMetrics
+                                  .trainingFrequency.status ===
+                                "Getting Started"
+                                  ? "secondary"
+                                  : "default"
+                              }
+                            >
                               {
                                 progressData.performanceMetrics
                                   .trainingFrequency.status
@@ -586,33 +680,69 @@ export default function ProgressPage() {
                             }
                             x
                           </div>
-                          <div className="text-sm text-muted-foreground">
-                            per week average
+                          <div className="text-sm text-muted-foreground mb-2">
+                            workouts this week
                           </div>
+                          <p className="text-xs text-muted-foreground">
+                            {
+                              progressData.performanceMetrics.trainingFrequency
+                                .explanation
+                            }
+                          </p>
                         </div>
 
+                        {/* Progressive Overload */}
                         <div className="p-4 bg-muted/50 rounded-lg">
                           <div className="flex justify-between items-center mb-2">
                             <span className="font-medium">
                               Progressive Overload
                             </span>
-                            <Badge variant="secondary">
+                            <Badge
+                              variant={
+                                progressData.performanceMetrics
+                                  .progressiveOverload.status ===
+                                  "Needs Focus" ||
+                                progressData.performanceMetrics
+                                  .progressiveOverload.status ===
+                                  "Getting Started"
+                                  ? "secondary"
+                                  : "default"
+                              }
+                            >
                               {
                                 progressData.performanceMetrics
                                   .progressiveOverload.status
                               }
                             </Badge>
                           </div>
-                          <div className="text-2xl font-bold">
+                          {progressData.performanceMetrics.progressiveOverload
+                            .value > 0 ? (
+                            <>
+                              <div className="text-2xl font-bold">
+                                {
+                                  progressData.performanceMetrics
+                                    .progressiveOverload.value
+                                }
+                                %
+                              </div>
+                              <div className="text-sm text-muted-foreground mb-2">
+                                average strength increase
+                              </div>
+                            </>
+                          ) : (
+                            <div className="text-lg font-semibold text-muted-foreground mb-2">
+                              {progressData.performanceMetrics
+                                .progressiveOverload.sessionCount > 0
+                                ? "Focus needed"
+                                : "Start tracking"}
+                            </div>
+                          )}
+                          <p className="text-xs text-muted-foreground">
                             {
                               progressData.performanceMetrics
-                                .progressiveOverload.value
+                                .progressiveOverload.explanation
                             }
-                            %
-                          </div>
-                          <div className="text-sm text-muted-foreground">
-                            of sessions progressed
-                          </div>
+                          </p>
                         </div>
                       </div>
                     </CardContent>
@@ -620,8 +750,8 @@ export default function ProgressPage() {
                 </div>
               </TabsContent>
 
-              <TabsContent value="goals" className="space-y-6">
-                <div className="grid lg:grid-cols-2 gap-6">
+              <TabsContent value="goals" className="space-y-4">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 xl:gap-6">
                   <Card className="border-0 bg-card">
                     <CardHeader>
                       <CardTitle className="flex items-center space-x-2">
@@ -656,13 +786,21 @@ export default function ProgressPage() {
                             </div>
                           ))
                         ) : (
-                          <div className="p-4 border border-border rounded-lg text-center">
-                            <p className="text-muted-foreground">
+                          <div className="p-6 border border-border rounded-lg text-center">
+                            <Target className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+                            <p className="text-muted-foreground font-medium mb-2">
                               No active goals set
                             </p>
-                            <p className="text-sm text-muted-foreground mt-2">
-                              Create goals to track your progress
+                            <p className="text-sm text-muted-foreground mb-4">
+                              Set specific fitness goals to track your progress
+                              more effectively
                             </p>
+                            <Link href="/goals">
+                              <Button variant="outline" size="sm">
+                                <Plus className="w-4 h-4 mr-2" />
+                                Create Your First Goal
+                              </Button>
+                            </Link>
                           </div>
                         )}
                       </div>
@@ -709,9 +847,9 @@ export default function ProgressPage() {
 
                         <Button
                           className="w-full mt-4 bg-foreground text-background hover:bg-foreground/90"
-                          onClick={handleSetNewGoal}
+                          asChild
                         >
-                          Set New Goal
+                          <Link href="/goals">Manage Goals</Link>
                         </Button>
                       </div>
                     </CardContent>

@@ -8,9 +8,9 @@ import {
   Clock,
   Target,
   Calendar,
-  Play,
   Globe,
   User,
+  Play,
 } from "lucide-react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -123,40 +123,45 @@ export default function Community() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-20 md:pb-0">
       {/* Replace custom header with reusable Header component */}
       <Header variant="dashboard" />
 
-      <div className="container mx-auto px-6 py-8">
+      <div className="container mx-auto px-4 py-6 max-w-6xl">
         {/* Header Section */}
-        <div className="flex items-center justify-between mb-12">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 sm:mb-12">
           <div>
-            <h1 className="text-4xl font-bold mb-3">Community Workouts</h1>
-            <p className="text-muted-foreground text-lg">
+            <h1 className="text-3xl sm:text-4xl font-bold mb-2 sm:mb-3">
+              Community Workouts
+            </h1>
+            <p className="text-muted-foreground text-base sm:text-lg">
               Discover and try workouts created by the community
             </p>
           </div>
         </div>
 
         {/* Search and Filter */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-8">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6 sm:mb-8">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
             <Input
-              placeholder="Search workouts..."
+              placeholder="Search community workouts..."
               className="pl-10"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <Button variant="outline" className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            className="flex items-center justify-center space-x-2 w-full sm:w-auto"
+          >
             <Filter className="w-4 h-4" />
             <span>Filter</span>
           </Button>
         </div>
 
         {/* Community Workouts Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 xl:gap-6">
           {filteredPublicWorkouts.length > 0 ? (
             filteredPublicWorkouts.map((workout) => (
               <WorkoutCard key={workout.id} workout={workout} />

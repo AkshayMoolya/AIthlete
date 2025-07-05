@@ -90,21 +90,21 @@ export default function WorkoutSessions() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-20 md:pb-0">
       <Header variant="dashboard" />
 
-      <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl sm:text-4xl font-bold mb-2">
+      <div className="container mx-auto px-4 py-6 max-w-6xl">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-2">
             Workout Sessions
           </h1>
-          <p className="text-muted-foreground text-base sm:text-lg">
+          <p className="text-muted-foreground text-base sm:text-lg md:text-xl">
             Track your workout history and progress
           </p>
         </div>
 
         {/* Search and Filter */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-8">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6 sm:mb-8 xl:mb-10">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
             <Input
@@ -114,7 +114,10 @@ export default function WorkoutSessions() {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <Button variant="outline" className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            className="flex items-center justify-center space-x-2 w-full sm:w-auto"
+          >
             <Filter className="w-4 h-4" />
             <span>Filter</span>
           </Button>

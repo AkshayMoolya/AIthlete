@@ -49,7 +49,6 @@ export async function GET(request: NextRequest) {
 
     // Calculate total time spent in workouts this week
     let totalMinutes = 0;
-    let totalCalories = 0;
 
     weekSessions.forEach((session) => {
       if (session.startTime && session.endTime) {
@@ -57,10 +56,6 @@ export async function GET(request: NextRequest) {
           new Date(session.endTime).getTime() -
           new Date(session.startTime).getTime();
         totalMinutes += durationMs / (1000 * 60);
-
-        // Estimate calories (simplified calculation)
-        const caloriesPerMinute = 5; // Average estimate
-        totalCalories += (durationMs / (1000 * 60)) * caloriesPerMinute;
       }
     });
 
@@ -132,34 +127,56 @@ export async function GET(request: NextRequest) {
     }
 
     // Find workout-related goals for weekly/monthly targets
-    const workoutGoals = goals.filter(
-      (goal) => goal.type === "consistency" || goal.type.includes("workout")
+    const consistencyGoals = goals.filter(
+      (goal) => goal.type === "consistency"
     );
 
-    // Use goal values if available, otherwise use 0
-    const weeklyProgressTarget =
-      workoutGoals.find((g) => g.name.toLowerCase().includes("week"))
-        ?.targetValue || 0;
-    const monthlyTarget =
-      workoutGoals.find((g) => g.name.toLowerCase().includes("month"))
-        ?.targetValue || 0;
+    // Default fitness targets (industry standard recommendations)
+    const DEFAULT_WEEKLY_WORKOUTS = 3;
+    const DEFAULT_MONTHLY_WORKOUTS = 12;
+
+    // Look for specific consistency goals, fallback to defaults
+    let weeklyProgressTarget = DEFAULT_WEEKLY_WORKOUTS;
+    let monthlyTarget = DEFAULT_MONTHLY_WORKOUTS;
+
+    // Try to find weekly consistency goal (per week frequency)
+    const weeklyConsistencyGoal = consistencyGoals.find((goal) => {
+      const name = goal.name.toLowerCase();
+      return (
+        name.includes("week") ||
+        name.includes("weekly") ||
+        (name.includes("workout") && name.includes("per week"))
+      );
+    });
+
+    if (weeklyConsistencyGoal) {
+      weeklyProgressTarget = weeklyConsistencyGoal.targetValue;
+    }
+
+    // Try to find monthly consistency goal
+    const monthlyConsistencyGoal = consistencyGoals.find((goal) => {
+      const name = goal.name.toLowerCase();
+      return (
+        name.includes("month") ||
+        name.includes("monthly") ||
+        (name.includes("workout") && name.includes("per month"))
+      );
+    });
+
+    if (monthlyConsistencyGoal) {
+      monthlyTarget = monthlyConsistencyGoal.targetValue;
+    }
 
     // Calculate progress metrics with appropriate targets
-    const weeklyProgress =
-      weeklyProgressTarget > 0
-        ? Math.min(
-            Math.round((weekSessions.length / weeklyProgressTarget) * 100),
-            100
-          )
-        : 0;
+    const weeklyProgress = Math.min(
+      Math.round((weekSessions.length / weeklyProgressTarget) * 100),
+      100
+    );
 
-    const monthlyProgress =
-      monthlyTarget > 0
-        ? Math.min(
-            Math.round((monthSessions.length / monthlyTarget) * 100),
-            100
-          )
-        : 0;
+    const monthlyProgress = Math.min(
+      Math.round((monthSessions.length / monthlyTarget) * 100),
+      100
+    );
 
     // Generate upcoming workouts (combine scheduled workouts and recent templates)
     // In a real app, you'd fetch scheduled workouts from the database
@@ -224,26 +241,20 @@ export async function GET(request: NextRequest) {
         );
       }
 
-      // Estimate calories
-      const caloriesPerMinute = 5; // Average estimate
-      const calories = Math.round(duration * caloriesPerMinute);
-
       return {
         id: session.id,
         name: session.workout.name,
         completedAt: session.endTime || session.startTime,
         duration,
         exerciseCount: session.exerciseLogs.length,
-        calories,
       };
     });
 
-    // Build dashboard data object
+    // Build dashboard data object with enhanced quick stats logic
     const dashboardData = {
       weeklyStats: {
         workouts: weekSessions.length,
         totalTime: totalTimeFormatted,
-        calories: Math.round(totalCalories),
       },
       recentWorkouts,
       goals: formattedGoals,
@@ -255,6 +266,31 @@ export async function GET(request: NextRequest) {
         weeklyGoalTarget: weeklyProgressTarget,
         monthlyGoalCurrent: monthSessions.length,
         monthlyGoalTarget: monthlyTarget,
+        // Enhanced context for better UI display
+        hasWeeklyGoal: weeklyConsistencyGoal !== undefined,
+        hasMonthlyGoal: monthlyConsistencyGoal !== undefined,
+        isUsingDefaults: !weeklyConsistencyGoal && !monthlyConsistencyGoal,
+        weeklyGoalName: weeklyConsistencyGoal?.name || null,
+        monthlyGoalName: monthlyConsistencyGoal?.name || null,
+        // Tooltips and explanations
+        tooltips: {
+          weeklyProgress: weeklyConsistencyGoal
+            ? `Progress towards your goal: "${weeklyConsistencyGoal.name}" (${weekSessions.length}/${weeklyProgressTarget} workouts)`
+            : `${weekSessions.length} workouts this week. Recommended: ${DEFAULT_WEEKLY_WORKOUTS} per week`,
+          monthlyProgress: monthlyConsistencyGoal
+            ? `Progress towards your goal: "${monthlyConsistencyGoal.name}" (${monthSessions.length}/${monthlyTarget} workouts)`
+            : `${monthSessions.length} workouts this month. Recommended: ${DEFAULT_MONTHLY_WORKOUTS} per month`,
+          currentStreak:
+            currentStreak > 0
+              ? `You've worked out for ${currentStreak} consecutive days! Keep it up!`
+              : "Start a workout streak by exercising today",
+          weeklyGoal: weeklyConsistencyGoal
+            ? `Your personal goal: ${weeklyConsistencyGoal.name}`
+            : "Set a weekly consistency goal to track your progress",
+          monthlyGoal: monthlyConsistencyGoal
+            ? `Your personal goal: ${monthlyConsistencyGoal.name}`
+            : "Set a monthly consistency goal to track your progress",
+        },
       },
       upcomingWorkouts,
     };

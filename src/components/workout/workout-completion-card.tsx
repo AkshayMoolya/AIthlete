@@ -1,4 +1,4 @@
-import { Award, Save } from "lucide-react";
+import { Award, Save, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -20,13 +20,38 @@ export function WorkoutCompletionCard({
   const isComplete = progress === 100;
 
   return (
-    <Card className="mt-8 border-2 border-dashed border-primary/40">
+    <Card
+      className={cn(
+        "mt-8 border-2 transition-all duration-500",
+        isComplete
+          ? "border-green-500 dark:border-green-600 shadow-lg shadow-green-100 dark:shadow-green-900/30"
+          : "border-dashed border-primary/40"
+      )}
+    >
       <CardContent className="p-8 text-center">
-        <div className="space-y-4">
+        <div className="space-y-5">
           <div className="flex items-center justify-center space-x-4 text-lg">
             <span className="font-semibold">Progress:</span>
-            <span className="font-mono">{progress}%</span>
-            <Progress value={progress} className="w-32 h-3" />
+            <span
+              className={cn(
+                "font-mono transition-colors",
+                isComplete ? "text-green-600 dark:text-green-500" : ""
+              )}
+            >
+              {progress}%
+            </span>
+            <div className="relative w-32">
+              <Progress
+                value={progress}
+                className={cn(
+                  "h-3 transition-all",
+                  isComplete ? "bg-green-100 dark:bg-green-950" : ""
+                )}
+              />
+              {isComplete && (
+                <div className="absolute inset-0 bg-green-500/20 animate-pulse rounded-full pointer-events-none" />
+              )}
+            </div>
           </div>
 
           <Button
@@ -42,8 +67,17 @@ export function WorkoutCompletionCard({
           >
             {isComplete ? (
               <>
-                <Award className="w-5 h-5 mr-2" />
-                Complete Workout
+                {isLoading ? (
+                  <div className="flex items-center">
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                    Saving...
+                  </div>
+                ) : (
+                  <>
+                    <Check className="w-5 h-5 mr-2" />
+                    Complete Workout
+                  </>
+                )}
               </>
             ) : (
               <>
@@ -54,7 +88,17 @@ export function WorkoutCompletionCard({
           </Button>
 
           {!isComplete && (
-            <p className="text-sm text-muted-foreground">
+            <p
+              className={cn(
+                "text-sm text-muted-foreground flex items-center justify-center",
+                remainingSets <= 2
+                  ? "text-amber-600 dark:text-amber-500 font-medium"
+                  : ""
+              )}
+            >
+              {remainingSets <= 2 ? (
+                <Award className="w-4 h-4 mr-2 inline-block" />
+              ) : null}
               {remainingSets} sets remaining
             </p>
           )}
